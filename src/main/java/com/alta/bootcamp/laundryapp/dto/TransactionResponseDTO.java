@@ -17,6 +17,8 @@ public class TransactionResponseDTO implements Serializable {
   @JsonProperty("admin_id")
   private Long adminId;
 
+  private AdminResponseDTO admin;
+
   private int weight;
   private String notes;
 

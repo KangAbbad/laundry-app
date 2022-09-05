@@ -90,62 +90,50 @@ public class AdminService implements IAdminService {
   @Override
   public ResponseDTO updateAdmin(Long id, AdminRequestDTO request) {
     Optional<Admin> admin = adminRepository.findById(id);
-    ResponseDTO response = new ResponseDTO();
 
     if (admin.isPresent()) {
+      Admin tempAdmin = admin.get();
+
       Optional<Admin> adminUsername = adminRepository.findByUsername(request.getUsername());
       Optional<Admin> adminEmail = adminRepository.findByEmail(request.getEmail());
       Optional<Admin> adminPhone = adminRepository.findByPhone(request.getPhone());
 
-      if (adminUsername.isPresent() && !Objects.equals(request.getUsername(), admin.get().getUsername())) {
+      if (adminUsername.isPresent() && !Objects.equals(request.getUsername(), tempAdmin.getUsername())) {
         throw new DataAlreadyExistException("Username is already exists");
-      } else if (adminEmail.isPresent() && !Objects.equals(request.getEmail(), admin.get().getEmail())) {
+      } else if (adminEmail.isPresent() && !Objects.equals(request.getEmail(), tempAdmin.getEmail())) {
         throw new DataAlreadyExistException("Email is already exists");
-      } else if (adminPhone.isPresent() && !Objects.equals(request.getPhone(), admin.get().getPhone())) {
+      } else if (adminPhone.isPresent() && !Objects.equals(request.getPhone(), tempAdmin.getPhone())) {
         throw new DataAlreadyExistException("Phone is already exists");
       }
 
-      Admin tempAdmin = admin.get();
-
       if (request.getUsername() != null) {
         tempAdmin.setUsername(request.getUsername());
-      } else {
-        tempAdmin.setUsername(admin.get().getUsername());
       }
 
       if (request.getEmail() != null) {
         tempAdmin.setEmail(request.getEmail());
-      } else {
-        tempAdmin.setEmail(admin.get().getEmail());
       }
 
       if (request.getPhone() != null) {
         tempAdmin.setPhone(request.getPhone());
-      } else {
-        tempAdmin.setPhone(admin.get().getPhone());
       }
 
       if (request.getIdCard() != null) {
         tempAdmin.setIdCard(request.getIdCard());
-      } else {
-        tempAdmin.setIdCard(admin.get().getIdCard());
       }
 
       if (request.getName() != null) {
         tempAdmin.setName(request.getName());
-      } else {
-        tempAdmin.setName(admin.get().getName());
       }
 
       if (request.getAddress() != null) {
         tempAdmin.setAddress(request.getAddress());
-      } else {
-        tempAdmin.setAddress(admin.get().getAddress());
       }
 
       Admin convertToEntity = modelMapper.map(tempAdmin, Admin.class);
       Admin updatedAdmin = adminRepository.save(convertToEntity);
 
+      ResponseDTO response = new ResponseDTO();
       response.setData(convertToDto(Optional.of(updatedAdmin)));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("Admin updated successfully");

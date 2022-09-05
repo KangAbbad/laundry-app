@@ -1,6 +1,7 @@
 package com.alta.bootcamp.laundryapp.utils;
 
 import com.alta.bootcamp.laundryapp.dto.AdminRequestDTO;
+import com.alta.bootcamp.laundryapp.dto.TransactionRequestDTO;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,6 +25,20 @@ public class ValidationUtils {
 
     if (StringUtils.isEmpty(request.getIdCard())) {
       throw new ValidationErrorException("ID Card cannot be empty");
+    }
+  }
+
+  public static void validateTransactionRequest(TransactionRequestDTO request) {
+    if (request == null) {
+      throw new ValidationErrorException("Body request cannot be empty");
+    }
+
+    if (request.getAdminId() == null) {
+      throw new ValidationErrorException("Admin cannot be empty");
+    }
+
+    if (request.getWeight() == 0) {
+      throw new ValidationErrorException("Weight cannot be empty");
     }
   }
 }

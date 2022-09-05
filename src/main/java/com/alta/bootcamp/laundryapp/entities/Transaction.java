@@ -29,6 +29,7 @@ public class Transaction {
   private String notes;
 
   private BigDecimal totalPrice;
+
   private TransactionStatusEnum status;
 
   @Column(nullable = false, updatable = false)
