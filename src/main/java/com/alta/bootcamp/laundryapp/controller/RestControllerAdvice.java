@@ -20,7 +20,7 @@ public class RestControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> globalExceptionHandler(Exception ex, WebRequest request) {
-        ResponseDTO response = new ResponseDTO();
+        ResponseDTO<Object> response = new ResponseDTO<>();
         response.setData(null);
         response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
         response.setMessage(ex.getMessage() + ", " + request.getDescription(false));
@@ -30,7 +30,7 @@ public class RestControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ValidationErrorException.class)
     public ResponseEntity<?> validationErrorExceptionHandler(Exception ex, WebRequest request) {
-        ResponseDTO response = new ResponseDTO();
+        ResponseDTO<Object> response = new ResponseDTO<>();
         response.setData(null);
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setMessage(ex.getMessage() + ", " + request.getDescription(false));
@@ -40,7 +40,7 @@ public class RestControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> resourceNotFoundErrorExceptionHandler(Exception ex, WebRequest request) {
-        ResponseDTO response = new ResponseDTO();
+        ResponseDTO<Object> response = new ResponseDTO<>();
         response.setData(null);
         response.setStatus(HttpStatus.NOT_FOUND.value());
         response.setMessage(ex.getMessage() + ", " + request.getDescription(false));
@@ -61,7 +61,7 @@ public class RestControllerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DataAlreadyExistException.class)
     public ResponseEntity<?> dataAlreadyExistsErrorExceptionHandler(Exception ex, WebRequest request) {
-        ResponseDTO response = new ResponseDTO();
+        ResponseDTO<Object> response = new ResponseDTO<>();
         response.setData(null);
         response.setStatus(HttpStatus.CONFLICT.value());
         response.setMessage(ex.getMessage() + ", " + request.getDescription(false));

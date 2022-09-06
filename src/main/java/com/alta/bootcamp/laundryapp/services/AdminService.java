@@ -3,6 +3,7 @@ package com.alta.bootcamp.laundryapp.services;
 import com.alta.bootcamp.laundryapp.dto.AdminRequestDTO;
 import com.alta.bootcamp.laundryapp.dto.AdminResponseDTO;
 import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
+import com.alta.bootcamp.laundryapp.dto.ResponseWithMetaDTO;
 import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.exceptions.DataAlreadyExistException;
 import com.alta.bootcamp.laundryapp.exceptions.ResourceNotFoundException;
@@ -11,8 +12,10 @@ import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Pageable;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -30,7 +33,7 @@ public class AdminService implements IAdminService {
   @SneakyThrows
   @Override
   @Transactional
-  public ResponseDTO createAdmin(AdminRequestDTO request) {
+  public ResponseDTO<AdminResponseDTO> createAdmin(AdminRequestDTO request) {
     ValidationUtils.validateAdminRequest(request);
 
     Admin admin = convertToEntity(request);
@@ -38,7 +41,7 @@ public class AdminService implements IAdminService {
     Optional<Admin> adminEmail = adminRepository.findByEmail(request.getEmail());
     Optional<Admin> adminPhone = adminRepository.findByPhone(request.getPhone());
 
-    ResponseDTO response = new ResponseDTO();
+    ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
 
     if (adminUsername.isPresent()) {
       throw new DataAlreadyExistException("Username is already exists");
@@ -58,15 +61,22 @@ public class AdminService implements IAdminService {
   }
 
   @Override
-  public ResponseDTO getAllAdmins() {
-    List<Admin> admins = adminRepository.findAll();
+  public ResponseWithMetaDTO<List<AdminResponseDTO>> getAllAdmins(Pageable pageable) {
+    Page<Admin> admins = adminRepository.findAll(pageable);
 
     List<AdminResponseDTO> adminsToDto = admins.stream()
             .map(admin -> modelMapper.map(admin, AdminResponseDTO.class))
             .collect(Collectors.toList());
 
-    ResponseDTO response = new ResponseDTO();
+    ResponseWithMetaDTO.Meta responseMeta = new ResponseWithMetaDTO.Meta();
+    responseMeta.setPage(pageable.getPageNumber() + 1);
+    responseMeta.setPerPage(pageable.getPageSize());
+    responseMeta.setTotalPage(admins.getTotalPages());
+    responseMeta.setTotalData(admins.getTotalElements());
+
+    ResponseWithMetaDTO<List<AdminResponseDTO>> response = new ResponseWithMetaDTO<>();
     response.setData(adminsToDto);
+    response.setMeta(responseMeta);
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("");
 
@@ -74,10 +84,10 @@ public class AdminService implements IAdminService {
   }
 
   @Override
-  public ResponseDTO getAdmin(Long id) {
+  public ResponseDTO<AdminResponseDTO> getAdmin(Long id) {
     Optional<Admin> admin = adminRepository.findById(id);
     if (admin.isPresent()) {
-      ResponseDTO response = new ResponseDTO();
+      ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
       response.setData(convertToDto(admin));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("");
@@ -88,7 +98,7 @@ public class AdminService implements IAdminService {
   }
 
   @Override
-  public ResponseDTO updateAdmin(Long id, AdminRequestDTO request) {
+  public ResponseDTO<AdminResponseDTO> updateAdmin(Long id, AdminRequestDTO request) {
     Optional<Admin> admin = adminRepository.findById(id);
 
     if (admin.isPresent()) {
@@ -133,7 +143,7 @@ public class AdminService implements IAdminService {
       Admin convertToEntity = modelMapper.map(tempAdmin, Admin.class);
       Admin updatedAdmin = adminRepository.save(convertToEntity);
 
-      ResponseDTO response = new ResponseDTO();
+      ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
       response.setData(convertToDto(Optional.of(updatedAdmin)));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("Admin updated successfully");
@@ -145,10 +155,10 @@ public class AdminService implements IAdminService {
   }
 
   @Override
-  public ResponseDTO deleteAdmin(Long id) {
+  public ResponseDTO<AdminResponseDTO> deleteAdmin(Long id) {
     Optional<Admin> admin = adminRepository.findById(id);
 
-    ResponseDTO response = new ResponseDTO();
+    ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
 
     if (admin.isPresent()) {
       adminRepository.deleteById(id);

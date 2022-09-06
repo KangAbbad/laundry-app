@@ -11,6 +11,8 @@ import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -34,13 +36,13 @@ public class TransactionService implements ITransactionService {
   @SneakyThrows
   @Override
   @Transactional
-  public ResponseDTO createTransaction(TransactionRequestDTO request) {
+  public ResponseDTO<TransactionResponseDTO> createTransaction(TransactionRequestDTO request) {
     ValidationUtils.validateTransactionRequest(request);
 
     Transaction transaction = convertToEntity(request);
     Transaction createdTransaction = transactionRepository.save(transaction);
 
-    ResponseDTO response = new ResponseDTO();
+    ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
     response.setData(convertToDto(Optional.of(createdTransaction)));
     response.setStatus(HttpStatus.CREATED.value());
     response.setMessage("Transaction created successfully");
@@ -49,15 +51,22 @@ public class TransactionService implements ITransactionService {
   }
 
   @Override
-  public ResponseDTO getAllTransactions() {
-    List<Transaction> transactions = transactionRepository.findAll();
+  public ResponseWithMetaDTO<List<TransactionResponseDTO>> getAllTransactions(Pageable pageable) {
+    Page<Transaction> transactions = transactionRepository.findAll(pageable);
 
     List<TransactionResponseDTO> transactionsToDto = transactions.stream()
             .map(transaction -> modelMapper.map(transaction, TransactionResponseDTO.class))
             .collect(Collectors.toList());
 
-    ResponseDTO response = new ResponseDTO();
+    ResponseWithMetaDTO.Meta responseMeta = new ResponseWithMetaDTO.Meta();
+    responseMeta.setPage(pageable.getPageNumber() + 1);
+    responseMeta.setPerPage(pageable.getPageSize());
+    responseMeta.setTotalPage(transactions.getTotalPages());
+    responseMeta.setTotalData(transactions.getTotalElements());
+
+    ResponseWithMetaDTO<List<TransactionResponseDTO>> response = new ResponseWithMetaDTO<>();
     response.setData(transactionsToDto);
+    response.setMeta(responseMeta);
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("");
 
@@ -65,7 +74,7 @@ public class TransactionService implements ITransactionService {
   }
 
   @Override
-  public ResponseDTO getTransaction(Long id) {
+  public ResponseDTO<TransactionResponseDTO> getTransaction(Long id) {
     Optional<Transaction> transaction = transactionRepository.findById(id);
     if (transaction.isPresent()) {
       Transaction tempTransaction = transaction.get();
@@ -79,10 +88,10 @@ public class TransactionService implements ITransactionService {
         throw new ResourceNotFoundException("Admin not found");
       }
 
-      Transaction convertToEntity = modelMapper.map(tempTransaction, Transaction.class);
-      Transaction updatedOrder = transactionRepository.save(convertToEntity);
+      // Transaction convertToEntity = modelMapper.map(tempTransaction, Transaction.class);
+      Transaction updatedOrder = transactionRepository.save(tempTransaction);
 
-      ResponseDTO response = new ResponseDTO();
+      ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
       response.setData(convertToDto(Optional.of(updatedOrder)));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("");
@@ -93,7 +102,7 @@ public class TransactionService implements ITransactionService {
   }
 
   @Override
-  public ResponseDTO updateTransaction(Long id, TransactionRequestDTO request) {
+  public ResponseDTO<TransactionResponseDTO> updateTransaction(Long id, TransactionRequestDTO request) {
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
     if (transaction.isPresent()) {
@@ -125,14 +134,14 @@ public class TransactionService implements ITransactionService {
         tempTransaction.setStatus(request.getStatus());
       }
 
-      return convertTransactionDtoToEntity(tempTransaction);
+      return convertTransactionEntityToDto(tempTransaction);
     } else {
       throw new ResourceNotFoundException("Transaction ID not found");
     }
   }
 
   @Override
-  public ResponseDTO updateTransactionStatus(Long id, TransactionStatusRequestDTO request) {
+  public ResponseDTO<TransactionResponseDTO> updateTransactionStatus(Long id, TransactionStatusRequestDTO request) {
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
     if (transaction.isPresent()) {
@@ -142,17 +151,17 @@ public class TransactionService implements ITransactionService {
         tempTransaction.setStatus(request.getStatus());
       }
 
-      return convertTransactionDtoToEntity(tempTransaction);
+      return convertTransactionEntityToDto(tempTransaction);
     } else {
       throw new ResourceNotFoundException("Transaction ID not found");
     }
   }
 
   @Override
-  public ResponseDTO deleteTransaction(Long id) {
+  public ResponseDTO<TransactionResponseDTO> deleteTransaction(Long id) {
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
-    ResponseDTO response = new ResponseDTO();
+    ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
 
     if (transaction.isPresent()) {
       transactionRepository.deleteById(id);
@@ -171,11 +180,11 @@ public class TransactionService implements ITransactionService {
     return modelMapper.map(request, Transaction.class);
   }
 
-  private ResponseDTO convertTransactionDtoToEntity(Transaction tempTransaction) {
-    Transaction convertToEntity = modelMapper.map(tempTransaction, Transaction.class);
-    Transaction updatedTransaction = transactionRepository.save(convertToEntity);
+  private ResponseDTO<TransactionResponseDTO> convertTransactionEntityToDto(Transaction tempTransaction) {
+    // Transaction convertToEntity = modelMapper.map(tempTransaction, Transaction.class);
+    Transaction updatedTransaction = transactionRepository.save(tempTransaction);
 
-    ResponseDTO response = new ResponseDTO();
+    ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
     response.setData(convertToDto(Optional.of(updatedTransaction)));
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("Transaction updated successfully");

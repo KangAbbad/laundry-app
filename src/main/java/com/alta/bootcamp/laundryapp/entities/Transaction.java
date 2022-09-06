@@ -1,9 +1,11 @@
 package com.alta.bootcamp.laundryapp.entities;
 
 import com.alta.bootcamp.laundryapp.enums.TransactionStatusEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -21,6 +23,7 @@ public class Transaction {
   private Long id;
 
   @OneToOne(fetch = FetchType.LAZY)
+  @JsonProperty("admin_id")
   private Admin admin;
 
   private int weight;
@@ -29,7 +32,6 @@ public class Transaction {
   private String notes;
 
   private BigDecimal totalPrice;
-
   private TransactionStatusEnum status;
 
   @Column(nullable = false, updatable = false)
@@ -39,6 +41,6 @@ public class Transaction {
 
   @Column(nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
-  @CreatedDate
+  @LastModifiedDate
   private Date updatedAt;
 }
