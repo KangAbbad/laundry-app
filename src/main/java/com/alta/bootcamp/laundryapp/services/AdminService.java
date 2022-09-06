@@ -7,6 +7,7 @@ import com.alta.bootcamp.laundryapp.dto.ResponseWithMetaDTO;
 import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.exceptions.DataAlreadyExistException;
 import com.alta.bootcamp.laundryapp.exceptions.ResourceNotFoundException;
+import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
@@ -98,7 +99,10 @@ public class AdminService implements IAdminService {
   }
 
   @Override
+  @Transactional
   public ResponseDTO<AdminResponseDTO> updateAdmin(Long id, AdminRequestDTO request) {
+    if (id == null) throw new ValidationErrorException("ID cannot be empty");
+
     Optional<Admin> admin = adminRepository.findById(id);
 
     if (admin.isPresent()) {
@@ -156,6 +160,8 @@ public class AdminService implements IAdminService {
 
   @Override
   public ResponseDTO<AdminResponseDTO> deleteAdmin(Long id) {
+    if (id == null) throw new ValidationErrorException("Admin ID cannot be empty");
+
     Optional<Admin> admin = adminRepository.findById(id);
 
     ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
@@ -170,6 +176,14 @@ public class AdminService implements IAdminService {
       throw new ResourceNotFoundException("Admin ID not found");
     }
 
+    return response;
+  }
+
+  public ResponseDTO<String> downloadExcel() {
+    ResponseDTO<String> response = new ResponseDTO<>();
+    response.setData("Waduh");
+    response.setStatus(200);
+    response.setMessage("OK");
     return response;
   }
 

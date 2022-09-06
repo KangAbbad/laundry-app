@@ -15,4 +15,5 @@ public interface IAdminService {
   ResponseDTO<AdminResponseDTO> getAdmin(Long id);
   ResponseDTO<AdminResponseDTO> updateAdmin(Long id, AdminRequestDTO request);
   ResponseDTO<AdminResponseDTO> deleteAdmin(Long id);
+  ResponseDTO<String> downloadExcel();
 }

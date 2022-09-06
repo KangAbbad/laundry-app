@@ -2,6 +2,7 @@ package com.alta.bootcamp.laundryapp.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +11,7 @@ import java.util.Date;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class AdminResponseDTO implements Serializable {
   private Long id;
   private String name;
@@ -28,4 +30,20 @@ public class AdminResponseDTO implements Serializable {
   private Date createdAt;
   @JsonProperty("updated_at")
   private Date updatedAt;
+
+  @Override
+  public String toString() {
+    return "AdminResponseDTO{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", username='" + username + '\'' +
+            ", email='" + email + '\'' +
+            ", phone='" + phone + '\'' +
+            ", idCard='" + idCard + '\'' +
+            ", address='" + address + '\'' +
+            ", password='" + password + '\'' +
+            ", createdAt=" + createdAt +
+            ", updatedAt=" + updatedAt +
+            '}';
+  }
 }

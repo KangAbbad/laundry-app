@@ -37,8 +37,16 @@ public class ValidationUtils {
       throw new ValidationErrorException("Admin cannot be empty");
     }
 
-    if (request.getWeight() == 0) {
+    if (request.getWeight() < 1) {
       throw new ValidationErrorException("Weight cannot be empty");
+    }
+
+    if (request.getTotalPrice() == null) {
+      throw new ValidationErrorException("Total Price cannot be empty");
+    }
+
+    if (request.getStatus() == null) {
+      throw new ValidationErrorException("Status cannot be empty");
     }
   }
 }

@@ -26,12 +26,16 @@ public class Transaction {
   @JsonProperty("admin_id")
   private Admin admin;
 
+  @Column(nullable = false)
   private int weight;
 
   @Column(columnDefinition = "TEXT")
   private String notes;
 
+  @Column(nullable = false)
   private BigDecimal totalPrice;
+
+  @Column(nullable = false)
   private TransactionStatusEnum status;
 
   @Column(nullable = false, updatable = false)
