@@ -1,13 +1,14 @@
-package com.alta.bootcamp.laundryapp.unittest.services.transaction;
+package com.alta.bootcamp.laundryapp.services;
 
 import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.dto.TransactionRequestDTO;
 import com.alta.bootcamp.laundryapp.dto.TransactionResponseDTO;
+import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.entities.Transaction;
 import com.alta.bootcamp.laundryapp.enums.TransactionStatusEnum;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
+import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.repositories.TransactionRepository;
-import com.alta.bootcamp.laundryapp.services.TransactionService;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -19,9 +20,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +32,9 @@ import static org.mockito.Mockito.when;
 public class CreateTransactionTest {
   @Mock
   TransactionRepository transactionRepository;
+
+  @Mock
+  AdminRepository adminRepository;
 
   @InjectMocks
   TransactionService serviceUnderTest = spy(new TransactionService());
@@ -47,15 +53,28 @@ public class CreateTransactionTest {
 
   @Test
   public void givenValidRequest_when_createNewTransaction_then_transactionShouldBeCreated() {
+    Long requestAdminId = 1L;
+
+    Optional<Admin> optionalAdmin = Optional.of(new Admin());
+    optionalAdmin.get().setId(requestAdminId);
+    optionalAdmin.get().setUsername("kangabbad");
+    optionalAdmin.get().setEmail("email@email.com");
+    optionalAdmin.get().setPhone("082147823643");
+    optionalAdmin.get().setIdCard("8734782637846");
+    optionalAdmin.get().setName("Mas Naufal");
+    optionalAdmin.get().setAddress("Laweyan, Solo");
+    optionalAdmin.get().setPassword("Waduh");
+
+    when(adminRepository.findById(anyLong())).thenReturn(optionalAdmin);
+
     TransactionRequestDTO request = new TransactionRequestDTO();
-    request.setAdminId(1L);
+    request.setAdminId(requestAdminId);
     request.setWeight(3);
     request.setNotes("Catatan Transaksi");
     request.setTotalPrice(BigDecimal.valueOf(15000));
     request.setStatus(TransactionStatusEnum.valueOf("NEW"));
 
     Transaction newTransaction = modelMapper.map(request, Transaction.class);
-    newTransaction.setId(1L);
 
     ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
     response.setData(convertToDto(newTransaction));
@@ -65,7 +84,7 @@ public class CreateTransactionTest {
     when(transactionRepository.save(any(Transaction.class))).thenReturn(newTransaction);
     ResponseDTO<TransactionResponseDTO> createdTransaction = serviceUnderTest.createTransaction(request);
 
-    assertThat(createdTransaction.getData()).isEqualTo(response.getData());
+    assertThat(createdTransaction).isEqualTo(response);
   }
 
   @Test(expected = ValidationErrorException.class)

@@ -1,4 +1,4 @@
-package com.alta.bootcamp.laundryapp.unittest.services.admin;
+package com.alta.bootcamp.laundryapp.services;
 
 import com.alta.bootcamp.laundryapp.dto.AdminRequestDTO;
 import com.alta.bootcamp.laundryapp.dto.AdminResponseDTO;
@@ -7,7 +7,6 @@ import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.exceptions.ResourceNotFoundException;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
-import com.alta.bootcamp.laundryapp.services.AdminService;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -21,9 +20,7 @@ import org.springframework.http.HttpStatus;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateAdminTest {
@@ -69,37 +66,38 @@ public class UpdateAdminTest {
   public void givenValidIdAndValidRequest_when_updateAdmin_then_shouldReturnUpdatedAdmin() {
     Long requestParamId = 1L;
 
-    Optional<Admin> admin = Optional.of(new Admin());
-    admin.get().setUsername("kangabbad");
-    admin.get().setEmail("email1@gmail.com");
-    admin.get().setPhone("087739999776");
-    admin.get().setName("Naufal Abbad");
-    admin.get().setAddress("Laweyan, Solo");
-    admin.get().setIdCard("3337201117380007");
-    admin.get().setPassword("Waduh");
+    Optional<Admin> oldAdmin = Optional.of(new Admin());
+    oldAdmin.get().setId(requestParamId);
+    oldAdmin.get().setUsername("kangabbad");
+    oldAdmin.get().setEmail("email@email.com");
+    oldAdmin.get().setPhone("082147823643");
+    oldAdmin.get().setIdCard("8734782637846");
+    oldAdmin.get().setName("Mas Naufal");
+    oldAdmin.get().setAddress("Laweyan, Solo");
+    oldAdmin.get().setPassword("Waduh");
 
-    when(adminRepository.findById(requestParamId)).thenReturn(admin);
+    when(adminRepository.findById(anyLong())).thenReturn(oldAdmin);
 
     AdminRequestDTO request = new AdminRequestDTO();
-    request.setUsername("kangabbad");
-    request.setEmail("email1@gmail.com");
+    request.setUsername("kangabbad9");
+    request.setEmail("email1@email.com");
     request.setPhone("087739999776");
-    request.setName("Naufal Abbad");
+    request.setIdCard("333712123918723");
+    request.setName("Mas Abbad");
     request.setAddress("Laweyan, Solo");
-    request.setIdCard("3337201117380007");
     request.setPassword("Waduh");
 
-    Admin futureDataAdmin = modelMapper.map(request, Admin.class);
-    futureDataAdmin.setId(requestParamId);
+    Admin newAdmin = modelMapper.map(request, Admin.class);
+    AdminResponseDTO newAdminDto = convertToDto(newAdmin);
 
-    ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
-    response.setData(convertToDto(futureDataAdmin));
-    response.setStatus(HttpStatus.OK.value());
-    response.setMessage("Admin updated successfully");
-
-    when(adminRepository.save(any(Admin.class))).thenReturn(futureDataAdmin);
+    when(adminRepository.save(any(Admin.class))).thenReturn(newAdmin);
 
     ResponseDTO<AdminResponseDTO> updatedAdmin = serviceUnderTest.updateAdmin(requestParamId, request);
+
+    ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
+    response.setData(newAdminDto);
+    response.setStatus(HttpStatus.OK.value());
+    response.setMessage("Admin updated successfully");
 
     assertThat(updatedAdmin).isEqualTo(response);
   }

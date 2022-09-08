@@ -1,11 +1,10 @@
-package com.alta.bootcamp.laundryapp.unittest.services.admin;
+package com.alta.bootcamp.laundryapp.services;
 
 import com.alta.bootcamp.laundryapp.dto.AdminResponseDTO;
 import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.dto.ResponseWithMetaDTO;
 import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
-import com.alta.bootcamp.laundryapp.services.AdminService;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -26,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -85,7 +85,7 @@ public class ReadAdminTest {
   }
 
   @Test
-  public void getAdminDetail_then_shouldReturnDetailOfAdmin() {
+  public void getAdmin_then_shouldReturnDetailOfAdmin() {
     Long requestParamId = 1L;
 
     Optional<Admin> admin1 = Optional.of(new Admin());
@@ -98,20 +98,10 @@ public class ReadAdminTest {
     admin1.get().setIdCard("3337201117380007");
     admin1.get().setPassword("Waduh");
 
-    when(adminRepository.findById(requestParamId)).thenReturn(admin1);
-
-    Admin admin2 = new Admin();
-    admin2.setId(requestParamId);
-    admin2.setUsername("kangabbad");
-    admin2.setEmail("email1@gmail.com");
-    admin2.setPhone("087739999776");
-    admin2.setName("Naufal Abbad");
-    admin2.setAddress("Laweyan, Solo");
-    admin2.setIdCard("3337201117380007");
-    admin2.setPassword("Waduh");
+    when(adminRepository.findById(anyLong())).thenReturn(admin1);
 
     ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
-    response.setData(convertToDto(admin2));
+    response.setData(convertToDto(admin1.get()));
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("");
 

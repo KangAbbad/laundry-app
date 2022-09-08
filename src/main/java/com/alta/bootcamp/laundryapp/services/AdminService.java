@@ -12,6 +12,8 @@ import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class AdminService implements IAdminService {
+  private static final Logger LOG = LoggerFactory.getLogger(AdminService.class);
+
   @Autowired
   ModelMapper modelMapper;
   @Autowired
@@ -37,12 +41,9 @@ public class AdminService implements IAdminService {
   public ResponseDTO<AdminResponseDTO> createAdmin(AdminRequestDTO request) {
     ValidationUtils.validateAdminRequest(request);
 
-    Admin admin = convertToEntity(request);
     Optional<Admin> adminUsername = adminRepository.findByUsername(request.getUsername());
     Optional<Admin> adminEmail = adminRepository.findByEmail(request.getEmail());
     Optional<Admin> adminPhone = adminRepository.findByPhone(request.getPhone());
-
-    ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
 
     if (adminUsername.isPresent()) {
       throw new DataAlreadyExistException("Username is already exists");
@@ -52,9 +53,11 @@ public class AdminService implements IAdminService {
       throw new DataAlreadyExistException("Phone is already exists");
     }
 
+    Admin admin = convertToEntity(request);
     Admin createdAdmin = adminRepository.save(admin);
 
-    response.setData(convertToDto(Optional.of(createdAdmin)));
+    ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
+    response.setData(convertToDto(createdAdmin));
     response.setStatus(HttpStatus.CREATED.value());
     response.setMessage("Admin created successfully");
 
@@ -81,6 +84,8 @@ public class AdminService implements IAdminService {
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("");
 
+    LOG.info("Completed [GET] getAllAdmins");
+
     return response;
   }
 
@@ -89,7 +94,7 @@ public class AdminService implements IAdminService {
     Optional<Admin> admin = adminRepository.findById(id);
     if (admin.isPresent()) {
       ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
-      response.setData(convertToDto(admin));
+      response.setData(convertToDto(admin.get()));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("");
       return response;
@@ -148,7 +153,7 @@ public class AdminService implements IAdminService {
       Admin updatedAdmin = adminRepository.save(convertToEntity);
 
       ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
-      response.setData(convertToDto(Optional.of(updatedAdmin)));
+      response.setData(convertToDto(updatedAdmin));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("Admin updated successfully");
 
@@ -179,19 +184,11 @@ public class AdminService implements IAdminService {
     return response;
   }
 
-  public ResponseDTO<String> downloadExcel() {
-    ResponseDTO<String> response = new ResponseDTO<>();
-    response.setData("Waduh");
-    response.setStatus(200);
-    response.setMessage("OK");
-    return response;
-  }
-
   private Admin convertToEntity(AdminRequestDTO request) {
     return modelMapper.map(request, Admin.class);
   }
 
-  private AdminResponseDTO convertToDto(Optional<Admin> admin) {
+  private AdminResponseDTO convertToDto(Admin admin) {
     return modelMapper.map(admin, AdminResponseDTO.class);
   }
 }

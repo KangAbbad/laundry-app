@@ -5,6 +5,7 @@ import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.entities.Transaction;
 import com.alta.bootcamp.laundryapp.enums.TransactionStatusEnum;
 import com.alta.bootcamp.laundryapp.exceptions.ResourceNotFoundException;
+import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.repositories.TransactionRepository;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
@@ -35,19 +36,32 @@ public class TransactionService implements ITransactionService {
 
   @SneakyThrows
   @Override
-  @Transactional
   public ResponseDTO<TransactionResponseDTO> createTransaction(TransactionRequestDTO request) {
     ValidationUtils.validateTransactionRequest(request);
 
-    Transaction transaction = convertToEntity(request);
-    Transaction createdTransaction = transactionRepository.save(transaction);
+    Optional<Admin> admin = adminRepository.findById(request.getAdminId());
 
-    ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
-    response.setData(convertToDto(Optional.of(createdTransaction)));
-    response.setStatus(HttpStatus.CREATED.value());
-    response.setMessage("Transaction created successfully");
+    if (admin.isPresent()) {
+      Transaction newTransaction = new Transaction();
+      newTransaction.setAdmin(admin.get());
+      newTransaction.setWeight(request.getWeight());
+      newTransaction.setNotes(request.getNotes());
+      newTransaction.setTotalPrice(request.getTotalPrice());
+      newTransaction.setStatus(request.getStatus());
 
-    return response;
+//      Transaction newTransaction = modelMapper.map(request, Transaction.class);
+//      newTransaction.setAdmin(admin.get());
+      Transaction createdTransaction = transactionRepository.save(newTransaction);
+
+      ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
+      response.setData(convertToDto(createdTransaction));
+      response.setStatus(HttpStatus.CREATED.value());
+      response.setMessage("Transaction created successfully");
+
+      return response;
+    } else {
+      throw new ResourceNotFoundException("Admin ID not found");
+    }
   }
 
   @Override
@@ -74,8 +88,12 @@ public class TransactionService implements ITransactionService {
   }
 
   @Override
+  @Transactional
   public ResponseDTO<TransactionResponseDTO> getTransaction(Long id) {
+    if (id == null) throw new ValidationErrorException("Transaction ID cannot be empty");
+
     Optional<Transaction> transaction = transactionRepository.findById(id);
+
     if (transaction.isPresent()) {
       Transaction tempTransaction = transaction.get();
 
@@ -88,11 +106,8 @@ public class TransactionService implements ITransactionService {
         throw new ResourceNotFoundException("Admin not found");
       }
 
-      // Transaction convertToEntity = modelMapper.map(tempTransaction, Transaction.class);
-      Transaction updatedOrder = transactionRepository.save(tempTransaction);
-
       ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
-      response.setData(convertToDto(Optional.of(updatedOrder)));
+      response.setData(convertToDto(tempTransaction));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("");
       return response;
@@ -102,13 +117,17 @@ public class TransactionService implements ITransactionService {
   }
 
   @Override
+  @Transactional
   public ResponseDTO<TransactionResponseDTO> updateTransaction(Long id, TransactionRequestDTO request) {
+    if (id == null) throw new ValidationErrorException("Transaction ID cannot be empty");
+    if (request == null) throw new ValidationErrorException("Body request cannot be empty");
+
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
     if (transaction.isPresent()) {
       Transaction tempTransaction = transaction.get();
 
-      if (request.getAdminId() != null) {
+      if (request.getAdminId() != null && !Objects.equals(request.getAdminId(), tempTransaction.getAdmin().getId())) {
         Optional<Admin> admin = adminRepository.findById(request.getAdminId());
         if (admin.isPresent()) {
           Admin newAdmin = modelMapper.map(admin, Admin.class);
@@ -118,19 +137,24 @@ public class TransactionService implements ITransactionService {
         }
       }
 
-      if (!Objects.equals(request.getWeight(), tempTransaction.getWeight())) {
+      if (request.getWeight() > 0 && !Objects.equals(request.getWeight(), tempTransaction.getWeight())) {
         tempTransaction.setWeight(request.getWeight());
       }
 
-      if (request.getNotes() != null) {
+      if (request.getNotes() != null && !Objects.equals(request.getNotes(), tempTransaction.getNotes())) {
         tempTransaction.setNotes(request.getNotes());
       }
 
-      if (!Objects.equals(request.getTotalPrice(), tempTransaction.getTotalPrice())) {
+      if (request.getTotalPrice() != null && !Objects.equals(request.getTotalPrice(), tempTransaction.getTotalPrice())) {
         tempTransaction.setTotalPrice(request.getTotalPrice());
       }
 
-      if (request.getStatus().equals(TransactionStatusEnum.NEW) || request.getStatus().equals(TransactionStatusEnum.DONE) || request.getStatus().equals(TransactionStatusEnum.INVALID)) {
+      if (
+              request.getStatus() != null &&
+              (request.getStatus().equals(TransactionStatusEnum.NEW) ||
+              request.getStatus().equals(TransactionStatusEnum.DONE) ||
+              request.getStatus().equals(TransactionStatusEnum.INVALID))
+      ) {
         tempTransaction.setStatus(request.getStatus());
       }
 
@@ -142,12 +166,20 @@ public class TransactionService implements ITransactionService {
 
   @Override
   public ResponseDTO<TransactionResponseDTO> updateTransactionStatus(Long id, TransactionStatusRequestDTO request) {
+    if (id == null) throw new ValidationErrorException("Transaction ID cannot be empty");
+    if (request == null) throw new ValidationErrorException("Body request cannot be empty");
+
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
     if (transaction.isPresent()) {
       Transaction tempTransaction = transaction.get();
 
-      if (request.getStatus().equals(TransactionStatusEnum.NEW) || request.getStatus().equals(TransactionStatusEnum.DONE) || request.getStatus().equals(TransactionStatusEnum.INVALID)) {
+      if (
+              request.getStatus() != null &&
+              (request.getStatus().equals(TransactionStatusEnum.NEW) ||
+              request.getStatus().equals(TransactionStatusEnum.DONE) ||
+              request.getStatus().equals(TransactionStatusEnum.INVALID))
+      ) {
         tempTransaction.setStatus(request.getStatus());
       }
 
@@ -159,6 +191,8 @@ public class TransactionService implements ITransactionService {
 
   @Override
   public ResponseDTO<TransactionResponseDTO> deleteTransaction(Long id) {
+    if (id == null) throw new ValidationErrorException("Transaction ID cannot be empty");
+
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
     ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
@@ -176,23 +210,18 @@ public class TransactionService implements ITransactionService {
     }
   }
 
-  private Transaction convertToEntity(TransactionRequestDTO request) {
-    return modelMapper.map(request, Transaction.class);
-  }
-
   private ResponseDTO<TransactionResponseDTO> convertTransactionEntityToDto(Transaction tempTransaction) {
-    // Transaction convertToEntity = modelMapper.map(tempTransaction, Transaction.class);
     Transaction updatedTransaction = transactionRepository.save(tempTransaction);
 
     ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
-    response.setData(convertToDto(Optional.of(updatedTransaction)));
+    response.setData(convertToDto(updatedTransaction));
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("Transaction updated successfully");
 
     return response;
   }
 
-  private TransactionResponseDTO convertToDto(Optional<Transaction> transaction) {
+  private TransactionResponseDTO convertToDto(Transaction transaction) {
     return modelMapper.map(transaction, TransactionResponseDTO.class);
   }
 }

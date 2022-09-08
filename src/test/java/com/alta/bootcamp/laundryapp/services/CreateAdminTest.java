@@ -1,4 +1,4 @@
-package com.alta.bootcamp.laundryapp.unittest.services.admin;
+package com.alta.bootcamp.laundryapp.services;
 
 import com.alta.bootcamp.laundryapp.dto.AdminRequestDTO;
 import com.alta.bootcamp.laundryapp.dto.AdminResponseDTO;
@@ -6,7 +6,6 @@ import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
-import com.alta.bootcamp.laundryapp.services.AdminService;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -18,7 +17,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -55,7 +53,6 @@ public class CreateAdminTest {
     request.setPassword("Waduh");
 
     Admin newAdmin = modelMapper.map(request, Admin.class);
-    newAdmin.setId(1L);
 
     ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
     response.setData(convertToDto(newAdmin));

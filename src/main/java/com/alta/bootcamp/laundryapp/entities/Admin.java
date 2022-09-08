@@ -7,7 +7,9 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity(name = "Admin")
 @Table(name = "admins")
@@ -28,12 +30,13 @@ public class Admin {
   @Column(nullable = false)
   private String phone;
 
-  @Column(nullable = false)
   private String idCard;
-
   private String name;
   private String address;
   private String password;
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "admin")
+  private List<Transaction> transactions = new ArrayList<>();
 
   @Column(nullable = false, updatable = false)
   @Temporal(TemporalType.TIMESTAMP)

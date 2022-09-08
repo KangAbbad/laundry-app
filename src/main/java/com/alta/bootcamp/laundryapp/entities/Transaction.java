@@ -1,7 +1,6 @@
 package com.alta.bootcamp.laundryapp.entities;
 
 import com.alta.bootcamp.laundryapp.enums.TransactionStatusEnum;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -22,20 +21,16 @@ public class Transaction {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JsonProperty("admin_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "admin_id")
   private Admin admin;
 
-  @Column(nullable = false)
   private int weight;
 
   @Column(columnDefinition = "TEXT")
   private String notes;
 
-  @Column(nullable = false)
   private BigDecimal totalPrice;
-
-  @Column(nullable = false)
   private TransactionStatusEnum status;
 
   @Column(nullable = false, updatable = false)

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="debug" name="queueloggingapp" package="">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+<!--            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} QueueLoggingApp %p %m%n" />-->
+            <PatternLayout pattern="%style{%d{ISO8601}}{white} %highlight{%-5level} [%style{%t}{bright,blue}] [%style{%C{1.}}{bright,yellow}] : %msg%n%throwable" />
+        </Console>
+        <RollingFile
+                name="RollingFile1"
+                fileName="./logs/laundryapp.log"
+                filePattern="./logs/$${date:yyyy-MM}/laundryapp-%d{-yyyy-MM-dd}-%i.log.gz"
+        >
+            <PatternLayout>
+                <pattern>%d %p %C{1.} [%t] %m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="2 MB" />
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+        </RollingFile>
+<!--        <File name="RollingFile2" fileName="./logs/queueloggingapp.log" immediateFlush="false" append="false">-->
+<!--            <PatternLayout pattern="%d{dd-MM-yyyy HH:mm:ss} %p %m%n" />-->
+<!--        </File>-->
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="RollingFile1" />
+<!--            <AppenderRef ref="RollingFile2" />-->
+        </Root>
+        <Logger name="com.alta.bootcamp.queueloggingapp.consumer" level="INFO" />
+    </Loggers>
+</Configuration>

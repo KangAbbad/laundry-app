@@ -34,7 +34,7 @@ public class ValidationUtils {
     }
 
     if (request.getAdminId() == null) {
-      throw new ValidationErrorException("Admin cannot be empty");
+      throw new ValidationErrorException("Admin ID cannot be empty");
     }
 
     if (request.getWeight() < 1) {

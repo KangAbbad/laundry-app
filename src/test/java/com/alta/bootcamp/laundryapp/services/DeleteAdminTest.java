@@ -1,9 +1,10 @@
-package com.alta.bootcamp.laundryapp.unittest.services.admin;
+package com.alta.bootcamp.laundryapp.services;
 
+import com.alta.bootcamp.laundryapp.dto.AdminResponseDTO;
+import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
-import com.alta.bootcamp.laundryapp.services.AdminService;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -11,10 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -24,8 +27,6 @@ public class DeleteAdminTest {
 
   @InjectMocks
   AdminService serviceUnderTest = spy(new AdminService());
-
-  ModelMapper modelMapper = spy(new ModelMapper());
 
   @BeforeEach
   void setup() {
@@ -42,12 +43,18 @@ public class DeleteAdminTest {
     Long requestParamId = 1L;
 
     Optional<Admin> admin = Optional.of(new Admin());
-    admin.get().setId(requestParamId);
+    admin.get().setId(1L);
+    admin.get().setUsername("Admin 01");
 
-    when(adminRepository.findById(requestParamId)).thenReturn(admin);
+    when(adminRepository.findById(anyLong())).thenReturn(admin);
 
-    serviceUnderTest.deleteAdmin(requestParamId);
+    ResponseDTO<AdminResponseDTO> deletedAdmin = serviceUnderTest.deleteAdmin(requestParamId);
 
-    verify(adminRepository).deleteById(requestParamId);
+    ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
+    response.setData(null);
+    response.setStatus(HttpStatus.NO_CONTENT.value());
+    response.setMessage("Admin ID: " + requestParamId + " (" + admin.get().getUsername() + ") deleted successfully");
+
+    assertThat(deletedAdmin).isEqualTo(response);
   }
 }
