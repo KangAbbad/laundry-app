@@ -4,8 +4,11 @@ import com.alta.bootcamp.laundryapp.dto.AdminRequestDTO;
 import com.alta.bootcamp.laundryapp.dto.AdminResponseDTO;
 import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.entities.Admin;
+import com.alta.bootcamp.laundryapp.entities.Role;
+import com.alta.bootcamp.laundryapp.enums.RoleName;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
+import com.alta.bootcamp.laundryapp.repositories.RoleRepository;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -14,10 +17,15 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -26,10 +34,15 @@ public class CreateAdminTest {
   @Mock
   AdminRepository adminRepository;
 
+  @Mock
+  RoleRepository roleRepository;
+
   @InjectMocks
   AdminService serviceUnderTest = spy(new AdminService());
 
   ModelMapper modelMapper = spy(new ModelMapper());
+
+  PasswordEncoder passwordEncoder;
 
   @BeforeEach
   void setup() {
@@ -53,6 +66,13 @@ public class CreateAdminTest {
     request.setPassword("Waduh");
 
     Admin newAdmin = modelMapper.map(request, Admin.class);
+
+    Optional<Role> adminRole = Optional.of(new Role());
+    adminRole.get().setId(1L);
+    adminRole.get().setName(RoleName.ROLE_ADMIN);
+
+    when(roleRepository.findByName(RoleName.ROLE_ADMIN)).thenReturn(adminRole);
+    when(passwordEncoder.encode(request.getPassword())).thenReturn(anyString());
 
     ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
     response.setData(convertToDto(newAdmin));

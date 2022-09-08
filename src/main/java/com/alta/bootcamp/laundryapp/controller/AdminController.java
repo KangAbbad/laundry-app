@@ -21,12 +21,6 @@ public class AdminController {
   @Autowired
   IAdminService adminService;
 
-  @PostMapping
-  public ResponseEntity<ResponseDTO<AdminResponseDTO>> createAdmin(@RequestBody AdminRequestDTO request) {
-    ResponseDTO<AdminResponseDTO> response = adminService.createAdmin(request);
-    return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-  }
-
   @GetMapping
   public ResponseEntity<ResponseWithMetaDTO<List<AdminResponseDTO>>> getAllAdmins(
           @RequestParam(defaultValue = "1") int page,

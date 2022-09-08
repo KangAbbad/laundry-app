@@ -2,14 +2,14 @@ package com.alta.bootcamp.laundryapp.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.NaturalId;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import javax.validation.constraints.NotBlank;
+import java.util.*;
 
 @Entity(name = "Admin")
 @Table(name = "admins")
@@ -21,24 +21,38 @@ public class Admin {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NaturalId
+  @NotBlank
   @Column(nullable = false)
   private String username;
 
+  @NaturalId
+  @NotBlank
   @Column(nullable = false)
   private String email;
 
+  @NaturalId
+  @NotBlank
   @Column(nullable = false)
   private String phone;
 
   private String idCard;
   private String name;
   private String address;
+
+  @NotBlank
   private String password;
 
   // @OneToMany(fetch = FetchType.LAZY, mappedBy = "admin")
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   @JoinColumn(name = "admin_id", referencedColumnName = "id")
   private List<Transaction> transactions = new ArrayList<>();
+
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(name = "admin_roles",
+          joinColumns = @JoinColumn(name = "admin_id"),
+          inverseJoinColumns = @JoinColumn(name = "role_id"))
+  private Set<Role> roles = new HashSet<>();
 
   @Column(nullable = false, updatable = false)
   @Temporal(TemporalType.TIMESTAMP)

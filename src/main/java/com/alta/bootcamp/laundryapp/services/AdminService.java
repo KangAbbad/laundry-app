@@ -1,14 +1,15 @@
 package com.alta.bootcamp.laundryapp.services;
 
-import com.alta.bootcamp.laundryapp.dto.AdminRequestDTO;
-import com.alta.bootcamp.laundryapp.dto.AdminResponseDTO;
-import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
-import com.alta.bootcamp.laundryapp.dto.ResponseWithMetaDTO;
+import com.alta.bootcamp.laundryapp.dto.*;
 import com.alta.bootcamp.laundryapp.entities.Admin;
+import com.alta.bootcamp.laundryapp.entities.Role;
+import com.alta.bootcamp.laundryapp.enums.RoleName;
 import com.alta.bootcamp.laundryapp.exceptions.DataAlreadyExistException;
 import com.alta.bootcamp.laundryapp.exceptions.ResourceNotFoundException;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
+import com.alta.bootcamp.laundryapp.repositories.RoleRepository;
+import com.alta.bootcamp.laundryapp.securities.config.JwtTokenProvider;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
@@ -19,6 +20,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
@@ -27,10 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOError;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,8 +42,21 @@ public class AdminService implements IAdminService {
 
   @Autowired
   ModelMapper modelMapper;
+
   @Autowired
   AdminRepository adminRepository;
+
+  @Autowired
+  RoleRepository roleRepository;
+
+  @Autowired
+  PasswordEncoder passwordEncoder;
+
+  @Autowired
+  AuthenticationManager authenticationManager;
+
+  @Autowired
+  JwtTokenProvider tokenProvider;
 
   @SneakyThrows
   @Override
@@ -48,25 +64,51 @@ public class AdminService implements IAdminService {
   public ResponseDTO<AdminResponseDTO> createAdmin(AdminRequestDTO request) {
     ValidationUtils.validateAdminRequest(request);
 
-    Optional<Admin> adminUsername = adminRepository.findByUsername(request.getUsername());
-    Optional<Admin> adminEmail = adminRepository.findByEmail(request.getEmail());
-    Optional<Admin> adminPhone = adminRepository.findByPhone(request.getPhone());
-
-    if (adminUsername.isPresent()) {
+    if (adminRepository.existsByUsername(request.getUsername())) {
       throw new DataAlreadyExistException("Username is already exists");
-    } else if (adminEmail.isPresent()) {
-      throw new DataAlreadyExistException("Email is already exists");
-    } else if (adminPhone.isPresent()) {
-      throw new DataAlreadyExistException("Phone is already exists");
     }
 
+    if (adminRepository.existsByEmail(request.getEmail())) {
+      throw new DataAlreadyExistException("Email is already exists");
+    }
+
+    if (adminRepository.existsByPhone(request.getPhone())) {
+      throw new DataAlreadyExistException("Email is already exists");
+    }
+
+    Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
+            .orElseThrow(() -> new ValidationErrorException("Admin role is not set"));
+
     Admin admin = convertToEntity(request);
+    admin.setPassword(passwordEncoder.encode(request.getPassword()));
+    admin.setRoles(Collections.singleton(adminRole));
+
     Admin createdAdmin = adminRepository.save(admin);
 
     ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
     response.setData(convertToDto(createdAdmin));
     response.setStatus(HttpStatus.CREATED.value());
     response.setMessage("Admin created successfully");
+
+    return response;
+  }
+
+  @Override
+  public ResponseDTO<JwtAuthenticationResponseDTO> authenticateAdmin(LoginRequestDTO request) {
+    Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                    request.getUsername(),
+                    request.getPassword()
+            )
+    );
+
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    String jwt = tokenProvider.generateToken(authentication);
+
+    ResponseDTO<JwtAuthenticationResponseDTO> response = new ResponseDTO<>();
+    response.setData(new JwtAuthenticationResponseDTO(jwt));
+    response.setStatus(HttpStatus.OK.value());
+    response.setMessage("Login successfully");
 
     return response;
   }

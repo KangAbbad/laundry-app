@@ -3,6 +3,7 @@ package com.alta.bootcamp.laundryapp.controller;
 import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.exceptions.DataAlreadyExistException;
 import com.alta.bootcamp.laundryapp.exceptions.ResourceNotFoundException;
+import com.alta.bootcamp.laundryapp.exceptions.UnauthorizedException;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -48,22 +49,21 @@ public class RestControllerAdvice extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
-//    @ExceptionHandler(UsernameNotFoundException.class)
-//    public ResponseEntity<?> usernameNotFoundErrorExceptionHandler(Exception ex, WebRequest request) {
-//        ErrorDetails errorDetails = new ErrorDetails(
-//                new Date(),
-//                ex.getMessage(),
-//                request.getDescription(false)
-//        );
-//
-//        return handleExceptionInternal(ex, errorDetails, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
-//    }
-
     @ExceptionHandler(DataAlreadyExistException.class)
     public ResponseEntity<?> dataAlreadyExistsErrorExceptionHandler(Exception ex, WebRequest request) {
         ResponseDTO<Object> response = new ResponseDTO<>();
         response.setData(null);
         response.setStatus(HttpStatus.CONFLICT.value());
+        response.setMessage(ex.getMessage() + ", " + request.getDescription(false));
+
+        return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<?> unauthorizedErrorExceptionHandler(Exception ex, WebRequest request) {
+        ResponseDTO<Object> response = new ResponseDTO<>();
+        response.setData(null);
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setMessage(ex.getMessage() + ", " + request.getDescription(false));
 
         return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.CONFLICT, request);
