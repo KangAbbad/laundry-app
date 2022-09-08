@@ -7,6 +7,7 @@ import com.alta.bootcamp.laundryapp.dto.ResponseWithMetaDTO;
 
 import org.springframework.data.domain.Pageable;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 public interface IAdminService {
@@ -15,4 +16,5 @@ public interface IAdminService {
   ResponseDTO<AdminResponseDTO> getAdmin(Long id);
   ResponseDTO<AdminResponseDTO> updateAdmin(Long id, AdminRequestDTO request);
   ResponseDTO<AdminResponseDTO> deleteAdmin(Long id);
+  ByteArrayInputStream downloadExcel();
 }

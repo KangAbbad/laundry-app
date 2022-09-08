@@ -42,15 +42,16 @@ public class TransactionService implements ITransactionService {
     Optional<Admin> admin = adminRepository.findById(request.getAdminId());
 
     if (admin.isPresent()) {
-      Transaction newTransaction = new Transaction();
-      newTransaction.setAdmin(admin.get());
-      newTransaction.setWeight(request.getWeight());
-      newTransaction.setNotes(request.getNotes());
-      newTransaction.setTotalPrice(request.getTotalPrice());
-      newTransaction.setStatus(request.getStatus());
-
-//      Transaction newTransaction = modelMapper.map(request, Transaction.class);
+//      Transaction newTransaction = new Transaction();
 //      newTransaction.setAdmin(admin.get());
+//      newTransaction.setWeight(request.getWeight());
+//      newTransaction.setNotes(request.getNotes());
+//      newTransaction.setTotalPrice(request.getTotalPrice());
+//      newTransaction.setStatus(request.getStatus());
+
+      Transaction newTransaction = modelMapper.map(request, Transaction.class);
+      newTransaction.setId(null);
+      newTransaction.setAdmin(admin.get());
       Transaction createdTransaction = transactionRepository.save(newTransaction);
 
       ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();

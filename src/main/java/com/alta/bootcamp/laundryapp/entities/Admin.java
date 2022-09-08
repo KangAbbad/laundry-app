@@ -35,7 +35,9 @@ public class Admin {
   private String address;
   private String password;
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "admin")
+  // @OneToMany(fetch = FetchType.LAZY, mappedBy = "admin")
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @JoinColumn(name = "admin_id", referencedColumnName = "id")
   private List<Transaction> transactions = new ArrayList<>();
 
   @Column(nullable = false, updatable = false)

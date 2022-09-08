@@ -12,11 +12,10 @@ public class AdminRequestDTO implements Serializable {
   private String username;
   private String email;
   private String phone;
-  private String name;
-
   @JsonProperty("id_card")
   private String idCard;
 
+  private String name;
   private String address;
   private String password;
 }

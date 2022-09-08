@@ -6,10 +6,11 @@ import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.dto.ResponseWithMetaDTO;
 import com.alta.bootcamp.laundryapp.services.IAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,6 +58,30 @@ public class AdminController {
   public ResponseEntity<ResponseDTO<AdminResponseDTO>> deleteAdmin(@PathVariable("id") Long id) {
     ResponseDTO<AdminResponseDTO> response = adminService.deleteAdmin(id);
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @GetMapping("/download-excel")
+  public ResponseEntity<Resource> downloadExcel() {
+    String fileName = "admins.xlsx";
+    String headerValue = "attachment; filename=" + fileName;
+    InputStreamResource excelResource = new InputStreamResource(adminService.downloadExcel());
+
+    return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+            .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+            .body(excelResource);
+
+//    ResponseDTO<Resource> response = new ResponseDTO<>();
+//    response.setData(excelResource);
+//    response.setStatus(HttpStatus.OK.value());
+//    response.setMessage("Excel downloaded successfully");
+
+//    HttpHeaders responseHeaders = new HttpHeaders();
+//    responseHeaders.add(HttpHeaders.CONTENT_DISPOSITION, headerValue);
+//    responseHeaders.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
+
+//    return new ResponseEntity<>(response, responseHeaders, HttpStatus.valueOf(response.getStatus()));
   }
 }
 

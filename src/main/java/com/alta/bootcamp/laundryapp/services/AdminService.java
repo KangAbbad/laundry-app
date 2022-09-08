@@ -11,6 +11,8 @@ import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
 import javax.transaction.Transactional;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOError;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -182,6 +189,52 @@ public class AdminService implements IAdminService {
     }
 
     return response;
+  }
+
+  @Override
+  public ByteArrayInputStream downloadExcel() {
+    List<Admin> admins = adminRepository.findAll();
+    try (
+      Workbook wb = new XSSFWorkbook();
+      ByteArrayOutputStream out = new ByteArrayOutputStream()
+    ) {
+      Sheet sheet1 = wb.createSheet("Sheet1");
+      List<String> headers = new ArrayList<>();
+      headers.add("User ID");
+      headers.add("Username");
+      headers.add("Email");
+      headers.add("Phone");
+      headers.add("ID Card");
+      headers.add("Name");
+      headers.add("Address");
+
+      Row headerRow = sheet1.createRow(0);
+
+      for (int i = 0; i < headers.size(); i++) {
+        Cell col = headerRow.createCell(i);
+        col.setCellValue(headers.get(i));
+      }
+
+      int rowId = 1;
+      for (Admin admin : admins) {
+        Row row = sheet1.createRow(rowId);
+        row.createCell(0, CellType.NUMERIC).setCellValue(admin.getId());
+        row.createCell(1, CellType.STRING).setCellValue(admin.getUsername());
+        row.createCell(2, CellType.STRING).setCellValue(admin.getEmail());
+        row.createCell(3, CellType.STRING).setCellValue(admin.getPhone());
+        row.createCell(4, CellType.STRING).setCellValue(admin.getIdCard());
+        row.createCell(5, CellType.STRING).setCellValue(admin.getName());
+        row.createCell(6, CellType.STRING).setCellValue(admin.getAddress());
+        rowId++;
+      }
+
+      wb.write(out);
+
+      return new ByteArrayInputStream(out.toByteArray());
+    } catch (IOError | IOException ioe) {
+      ioe.printStackTrace();
+      return null;
+    }
   }
 
   private Admin convertToEntity(AdminRequestDTO request) {
