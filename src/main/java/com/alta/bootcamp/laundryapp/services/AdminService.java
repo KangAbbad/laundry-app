@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class AdminService implements IAdminService {
-  private static final Logger LOG = LoggerFactory.getLogger(AdminService.class);
+  private static final Logger logger = LoggerFactory.getLogger(AdminService.class);
 
   @Autowired
   ModelMapper modelMapper;
@@ -65,15 +65,18 @@ public class AdminService implements IAdminService {
     ValidationUtils.validateAdminRequest(request);
 
     if (adminRepository.existsByUsername(request.getUsername())) {
+      logger.error("[POST] /api/v1/signup - Username is already exists");
       throw new DataAlreadyExistException("Username is already exists");
     }
 
     if (adminRepository.existsByEmail(request.getEmail())) {
+      logger.error("[POST] /api/v1/signup - Email is already exists");
       throw new DataAlreadyExistException("Email is already exists");
     }
 
     if (adminRepository.existsByPhone(request.getPhone())) {
-      throw new DataAlreadyExistException("Email is already exists");
+      logger.error("[POST] /api/v1/signup - Phone is already exists");
+      throw new DataAlreadyExistException("Phone is already exists");
     }
 
     Role adminRole = roleRepository.findByName(RoleName.ROLE_ADMIN)
@@ -89,6 +92,8 @@ public class AdminService implements IAdminService {
     response.setData(convertToDto(createdAdmin));
     response.setStatus(HttpStatus.CREATED.value());
     response.setMessage("Admin created successfully");
+
+    logger.info("[POST] /api/v1/signup - Admin created successfully");
 
     return response;
   }
@@ -109,6 +114,8 @@ public class AdminService implements IAdminService {
     response.setData(new JwtAuthenticationResponseDTO(jwt));
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("Login successfully");
+
+    logger.info("[POST] /api/v1/signin - Login successfully");
 
     return response;
   }
@@ -133,7 +140,7 @@ public class AdminService implements IAdminService {
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("");
 
-    LOG.info("Completed [GET] getAllAdmins");
+    logger.info("[GET] /api/v1/admins - status " + HttpStatus.OK.value());
 
     return response;
   }
@@ -146,8 +153,13 @@ public class AdminService implements IAdminService {
       response.setData(convertToDto(admin.get()));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("");
+
+      String logMsg = "[GET] /api/v1/admins/" + "{" + id + "}" + " - status " + HttpStatus.OK.value();
+      logger.info(logMsg);
       return response;
     } else {
+      String logMsg = "[GET] /api/v1/admins/" + "{" + id + "}" + " - Admin ID not found";
+      logger.error(logMsg);
       throw new ResourceNotFoundException("Admin ID not found");
     }
   }
@@ -162,15 +174,17 @@ public class AdminService implements IAdminService {
     if (admin.isPresent()) {
       Admin tempAdmin = admin.get();
 
-      Optional<Admin> adminUsername = adminRepository.findByUsername(request.getUsername());
-      Optional<Admin> adminEmail = adminRepository.findByEmail(request.getEmail());
-      Optional<Admin> adminPhone = adminRepository.findByPhone(request.getPhone());
-
-      if (adminUsername.isPresent() && !Objects.equals(request.getUsername(), tempAdmin.getUsername())) {
+      if (adminRepository.existsByUsername(request.getUsername()) && !Objects.equals(request.getUsername(), tempAdmin.getUsername())) {
+        String logMsg = "[PUT] /api/v1/admins/" + "{" + id + "}" + " - Username is already exists";
+        logger.error(logMsg);
         throw new DataAlreadyExistException("Username is already exists");
-      } else if (adminEmail.isPresent() && !Objects.equals(request.getEmail(), tempAdmin.getEmail())) {
+      } else if (adminRepository.existsByEmail(request.getEmail()) && !Objects.equals(request.getEmail(), tempAdmin.getEmail())) {
+        String logMsg = "[PUT] /api/v1/admins/" + "{" + id + "}" + " - Email is already exists";
+        logger.error(logMsg);
         throw new DataAlreadyExistException("Email is already exists");
-      } else if (adminPhone.isPresent() && !Objects.equals(request.getPhone(), tempAdmin.getPhone())) {
+      } else if (adminRepository.existsByPhone(request.getPhone()) && !Objects.equals(request.getPhone(), tempAdmin.getPhone())) {
+        String logMsg = "[PUT] /api/v1/admins/" + "{" + id + "}" + " - Phone is already exists";
+        logger.error(logMsg);
         throw new DataAlreadyExistException("Phone is already exists");
       }
 
@@ -206,8 +220,13 @@ public class AdminService implements IAdminService {
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("Admin updated successfully");
 
+      String logMsg = "[PUT] /api/v1/admins/" + "{" + id + "}" + " - Admin updated successfully";
+      logger.info(logMsg);
+
       return response;
     } else {
+      String logMsg = "[PUT] /api/v1/admins/" + "{" + id + "}" + " - Admin ID not found";
+      logger.error(logMsg);
       throw new ResourceNotFoundException("Admin ID not found");
     }
   }
@@ -226,7 +245,12 @@ public class AdminService implements IAdminService {
       response.setData(null);
       response.setStatus(HttpStatus.NO_CONTENT.value());
       response.setMessage("Admin ID: " + id + " (" + admin.get().getUsername() + ") deleted successfully");
+
+      String logMsg = "[DELETE] /api/v1/admins/" + "{" + id + "}" + " - Admin ID: " + id + " (" + admin.get().getUsername() + ") deleted successfully";
+      logger.info(logMsg);
     } else {
+      String logMsg = "[DELETE] /api/v1/admins/" + "{" + id + "}" + " - Admin ID not found";
+      logger.error(logMsg);
       throw new ResourceNotFoundException("Admin ID not found");
     }
 
@@ -272,9 +296,14 @@ public class AdminService implements IAdminService {
 
       wb.write(out);
 
+      String logMsg = "[GET] /api/v1/admins/download-excel - status " + HttpStatus.OK.value();
+      logger.info(logMsg);
+
       return new ByteArrayInputStream(out.toByteArray());
     } catch (IOError | IOException ioe) {
       ioe.printStackTrace();
+      String logMsg = "[GET] /api/v1/admins/download-excel - status " + HttpStatus.INTERNAL_SERVER_ERROR.value();
+      logger.info(logMsg);
       return null;
     }
   }
