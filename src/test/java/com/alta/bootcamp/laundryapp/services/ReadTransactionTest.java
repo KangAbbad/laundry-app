@@ -2,6 +2,7 @@ package com.alta.bootcamp.laundryapp.services;
 
 import com.alta.bootcamp.laundryapp.dto.ResponseDTO;
 import com.alta.bootcamp.laundryapp.dto.ResponseWithMetaDTO;
+//import com.alta.bootcamp.laundryapp.dto.TodayRevenueDTO;
 import com.alta.bootcamp.laundryapp.dto.TransactionResponseDTO;
 import com.alta.bootcamp.laundryapp.entities.Admin;
 import com.alta.bootcamp.laundryapp.entities.Transaction;
@@ -24,7 +25,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
+//import java.math.BigInteger;
 import java.util.ArrayList;
+//import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -141,6 +144,35 @@ public class ReadTransactionTest {
 
     assertThat(transactionDetail).isEqualTo(response);
   }
+
+//  @Test
+//  public void getTodayRevenue_then_shouldReturnListOfTodayRevenue() {
+//    List<Object[]> todayRevenues = new ArrayList<>();
+//
+//    Object[] todayRevenueObject = new Object[2];
+//    todayRevenueObject[0] = 1L;
+//    todayRevenueObject[1] = BigDecimal.valueOf(15000);
+//
+//    todayRevenues.add(todayRevenueObject);
+//
+//    when(transactionRepository.getTodayRevenue()).thenReturn(todayRevenues);
+//
+//    TodayRevenueDTO todayRevenueDto = new TodayRevenueDTO();
+//    todayRevenueDto.setAdminId(1L);
+//    todayRevenueDto.setTodayRevenue(BigDecimal.valueOf(15000));
+//
+//    List<TodayRevenueDTO> todayRevenueList = new ArrayList<>();
+//    todayRevenueList.add(todayRevenueDto);
+//
+//    ResponseDTO<List<TodayRevenueDTO>> response = new ResponseDTO<>();
+//    response.setData(todayRevenueList);
+//    response.setStatus(HttpStatus.OK.value());
+//    response.setMessage("");
+//
+//    ResponseDTO<List<TodayRevenueDTO>> transactionDetail = serviceUnderTest.getTodayRevenue();
+//
+//    assertThat(transactionDetail).isEqualTo(response);
+//  }
 
   private TransactionResponseDTO convertToDto(Transaction transaction) { return modelMapper.map(transaction, TransactionResponseDTO.class); }
 }
