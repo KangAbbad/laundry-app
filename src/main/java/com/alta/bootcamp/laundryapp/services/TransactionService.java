@@ -10,21 +10,32 @@ import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.repositories.TransactionRepository;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOError;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class TransactionService implements ITransactionService {
+  private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
+
   @Autowired
   ModelMapper modelMapper;
 
@@ -33,6 +44,9 @@ public class TransactionService implements ITransactionService {
 
   @Autowired
   AdminRepository adminRepository;
+
+  @Autowired
+  EntityManager entityManager;
 
   @SneakyThrows
   @Override
@@ -59,8 +73,11 @@ public class TransactionService implements ITransactionService {
       response.setStatus(HttpStatus.CREATED.value());
       response.setMessage("Transaction created successfully");
 
+      logger.info("[POST] /api/v1/transactions - Transaction created successfully");
+
       return response;
     } else {
+      logger.error("[POST] /api/v1/transactions - Admin ID not found");
       throw new ResourceNotFoundException("Admin ID not found");
     }
   }
@@ -84,6 +101,9 @@ public class TransactionService implements ITransactionService {
     response.setMeta(responseMeta);
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("");
+
+    String logMsg = "[GET] /api/v1/transactions - status " + HttpStatus.OK.value();
+    logger.info(logMsg);
 
     return response;
   }
@@ -111,8 +131,14 @@ public class TransactionService implements ITransactionService {
       response.setData(convertToDto(tempTransaction));
       response.setStatus(HttpStatus.OK.value());
       response.setMessage("");
+
+      String logMsg = "[GET] /api/v1/transactions/" + "{" + id + "}" + " - status " + HttpStatus.OK.value();
+      logger.info(logMsg);
+
       return response;
     } else {
+      String logMsg = "[GET] /api/v1/transactions/" + "{" + id + "}" + " - Transaction ID not found";
+      logger.error(logMsg);
       throw new ResourceNotFoundException("Transaction ID not found");
     }
   }
@@ -134,6 +160,8 @@ public class TransactionService implements ITransactionService {
           Admin newAdmin = modelMapper.map(admin, Admin.class);
           tempTransaction.setAdmin(newAdmin);
         } else {
+          String logMsg = "[PUT] /api/v1/transactions/" + "{" + id + "}" + " - Admin ID not found";
+          logger.error(logMsg);
           throw new ResourceNotFoundException("Admin ID not found");
         }
       }
@@ -161,6 +189,8 @@ public class TransactionService implements ITransactionService {
 
       return convertTransactionEntityToDto(tempTransaction);
     } else {
+      String logMsg = "[PUT] /api/v1/transactions/" + "{" + id + "}" + " - Transaction ID not found";
+      logger.error(logMsg);
       throw new ResourceNotFoundException("Transaction ID not found");
     }
   }
@@ -186,6 +216,8 @@ public class TransactionService implements ITransactionService {
 
       return convertTransactionEntityToDto(tempTransaction);
     } else {
+      String logMsg = "[PUT] /api/v1/transactions/" + "{" + id + "}" + " - Transaction ID not found";
+      logger.error(logMsg);
       throw new ResourceNotFoundException("Transaction ID not found");
     }
   }
@@ -205,10 +237,96 @@ public class TransactionService implements ITransactionService {
       response.setStatus(HttpStatus.NO_CONTENT.value());
       response.setMessage("Transaction ID: " + id + " deleted successfully");
 
+      String logMsg = "[DELETE] /api/v1/transactions/" + "{" + id + "}" + " - Transaction ID not found";
+      logger.info(logMsg);
+
       return response;
     } else {
+      String logMsg = "[DELETE] /api/v1/transactions/" + "{" + id + "}" + " - Transaction ID not found";
+      logger.error(logMsg);
       throw new ResourceNotFoundException("Transaction ID not found");
     }
+  }
+
+  @Override
+  public ByteArrayInputStream downloadExcel() {
+    List<Transaction> transactions = transactionRepository.findAll();
+
+    try (
+            Workbook wb = new XSSFWorkbook();
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+    ) {
+      Sheet sheet1 = wb.createSheet("Sheet1");
+      List<String> headers = new ArrayList<>();
+      headers.add("Transaction ID");
+      headers.add("Admin ID");
+      headers.add("Notes");
+      headers.add("Weight");
+      headers.add("Total Price");
+
+      Row headerRow = sheet1.createRow(0);
+
+      for (int i = 0; i < headers.size(); i++) {
+        Cell col = headerRow.createCell(i);
+        col.setCellValue(headers.get(i));
+      }
+
+      int rowId = 1;
+      for (Transaction transaction : transactions) {
+        Row row = sheet1.createRow(rowId);
+        row.createCell(0, CellType.NUMERIC).setCellValue(transaction.getId());
+        row.createCell(1, CellType.NUMERIC).setCellValue(transaction.getAdmin().getId());
+        row.createCell(2, CellType.STRING).setCellValue(transaction.getNotes());
+        row.createCell(3, CellType.NUMERIC).setCellValue(transaction.getWeight());
+        row.createCell(4, CellType.STRING).setCellValue(String.valueOf(transaction.getTotalPrice()));
+        rowId++;
+      }
+
+      wb.write(out);
+
+      String logMsg = "[GET] /api/v1/transactions/download-excel - status " + HttpStatus.OK.value();
+      logger.info(logMsg);
+
+      return new ByteArrayInputStream(out.toByteArray());
+    } catch (IOError | IOException ioe) {
+      ioe.printStackTrace();
+      String logMsg = "[GET] /api/v1/transactions/download-excel - status " + HttpStatus.INTERNAL_SERVER_ERROR.value();
+      logger.info(logMsg);
+      return null;
+    }
+  }
+
+  @Override
+  @Transactional
+  public ResponseDTO<List<TodayRevenueDTO>> getTodayRevenue() {
+    List<Object[]> todayRevenues = transactionRepository.getTodayRevenue();
+
+    List<TodayRevenueDTO> todayRevenueToDto = new ArrayList<>();
+
+    todayRevenues.forEach(revenue -> {
+      BigInteger adminId = (BigInteger) Arrays.stream(revenue).toList().get(0);
+      BigDecimal todayRevenue = (BigDecimal) Arrays.stream(revenue).toList().get(1);
+
+      TodayRevenueDTO adminDailyRevenue = new TodayRevenueDTO();
+      adminDailyRevenue.setAdminId(adminId.longValue());
+      adminDailyRevenue.setTodayRevenue(todayRevenue);
+
+      todayRevenueToDto.add(adminDailyRevenue);
+    });
+
+//    List<TodayRevenueDTO> todayRevenuesToDto = todayRevenues.stream()
+//            .map(revenue -> modelMapper.map(revenue, TodayRevenueDTO.class))
+//            .collect(Collectors.toList());
+
+    ResponseDTO<List<TodayRevenueDTO>> response = new ResponseDTO<>();
+    response.setData(todayRevenueToDto);
+    response.setStatus(HttpStatus.OK.value());
+    response.setMessage("");
+
+    String logMsg = "[GET] /api/v1/transactions/today-revenue";
+    logger.info(logMsg);
+
+    return response;
   }
 
   private ResponseDTO<TransactionResponseDTO> convertTransactionEntityToDto(Transaction tempTransaction) {
@@ -218,6 +336,9 @@ public class TransactionService implements ITransactionService {
     response.setData(convertToDto(updatedTransaction));
     response.setStatus(HttpStatus.OK.value());
     response.setMessage("Transaction updated successfully");
+
+    String logMsg = "[PUT] /api/v1/transactions/" + "{" + updatedTransaction.getId() + "}" + " - Transaction updated successfully";
+    logger.error(logMsg);
 
     return response;
   }

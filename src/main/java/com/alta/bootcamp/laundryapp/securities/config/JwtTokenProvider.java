@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.util.Calendar;
 import java.util.Date;
 
 @Component
@@ -27,7 +28,10 @@ public class JwtTokenProvider {
     UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
     Date now = new Date();
-    Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(now);
+    calendar.add(Calendar.MONTH, 1);
+    Date expiryDate = calendar.getTime();
 
     return Jwts.builder()
             .setSubject(Long.toString(userPrincipal.getId()))

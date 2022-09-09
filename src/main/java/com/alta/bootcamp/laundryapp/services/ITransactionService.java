@@ -3,6 +3,7 @@ package com.alta.bootcamp.laundryapp.services;
 import com.alta.bootcamp.laundryapp.dto.*;
 import org.springframework.data.domain.Pageable;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 public interface ITransactionService {
@@ -12,4 +13,6 @@ public interface ITransactionService {
   ResponseDTO<TransactionResponseDTO> updateTransaction(Long id, TransactionRequestDTO request);
   ResponseDTO<TransactionResponseDTO> updateTransactionStatus(Long id, TransactionStatusRequestDTO request);
   ResponseDTO<TransactionResponseDTO> deleteTransaction(Long id);
+  ByteArrayInputStream downloadExcel();
+  ResponseDTO<List<TodayRevenueDTO>> getTodayRevenue();
 }
