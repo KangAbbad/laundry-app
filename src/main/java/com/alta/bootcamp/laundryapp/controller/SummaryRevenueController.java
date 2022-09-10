@@ -3,9 +3,13 @@ package com.alta.bootcamp.laundryapp.controller;
 import com.alta.bootcamp.laundryapp.dto.*;
 import com.alta.bootcamp.laundryapp.services.ISummaryRevenueService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,5 +64,18 @@ public class SummaryRevenueController {
   public ResponseEntity<ResponseDTO<SummaryRevenueResponseDTO>> deleteSummaryRevenue(@PathVariable("id") Long id) {
     ResponseDTO<SummaryRevenueResponseDTO> response = summaryRevenueService.deleteSummaryRevenue(id);
     return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+  }
+
+  @GetMapping("/download-excel")
+  public ResponseEntity<Resource> downloadExcel() {
+    String fileName = "summary-revenue.xlsx";
+    String headerValue = "attachment; filename=" + fileName;
+    InputStreamResource excelResource = new InputStreamResource(summaryRevenueService.downloadExcel());
+
+    return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+            .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+            .body(excelResource);
   }
 }

@@ -277,6 +277,11 @@ public class AdminService implements IAdminService {
       headers.add("ID Card");
       headers.add("Name");
       headers.add("Address");
+      headers.add("Join Date");
+
+      CellStyle cellStyle = wb.createCellStyle();
+      CreationHelper createHelper = wb.getCreationHelper();
+      cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/mm/yyyy hh:mm:ss"));
 
       Row headerRow = sheet1.createRow(0);
 
@@ -295,6 +300,11 @@ public class AdminService implements IAdminService {
         row.createCell(4, CellType.STRING).setCellValue(admin.getIdCard());
         row.createCell(5, CellType.STRING).setCellValue(admin.getName());
         row.createCell(6, CellType.STRING).setCellValue(admin.getAddress());
+
+        Cell cell7 = row.createCell(7, CellType.STRING);
+        cell7.setCellStyle(cellStyle);
+        cell7.setCellValue(admin.getCreatedAt());
+
         rowId++;
       }
 

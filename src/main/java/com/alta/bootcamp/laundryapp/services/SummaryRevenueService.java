@@ -9,6 +9,8 @@ import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.repositories.SummaryRevenueRepository;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
 import lombok.SneakyThrows;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOError;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -134,6 +140,59 @@ public class SummaryRevenueService implements ISummaryRevenueService {
     logger.info(logMsg);
 
     return response;
+  }
+
+  @Override
+  public ByteArrayInputStream downloadExcel() {
+    List<SummaryRevenue> summaryRevenueList = summaryRevenueRepository.findAll();
+    try (
+            Workbook wb = new XSSFWorkbook();
+            ByteArrayOutputStream out = new ByteArrayOutputStream()
+    ) {
+      Sheet sheet1 = wb.createSheet("Sheet1");
+      List<String> headers = new ArrayList<>();
+      headers.add("Revenue ID");
+      headers.add("Admin ID");
+      headers.add("Total Revenue");
+      headers.add("Revenue Date");
+
+      CellStyle cellStyle = wb.createCellStyle();
+      CreationHelper createHelper = wb.getCreationHelper();
+      cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/mm/yyyy hh:mm:ss"));
+
+      Row headerRow = sheet1.createRow(0);
+
+      for (int i = 0; i < headers.size(); i++) {
+        Cell col = headerRow.createCell(i);
+        col.setCellValue(headers.get(i));
+      }
+
+      int rowId = 1;
+      for (SummaryRevenue summaryRevenue : summaryRevenueList) {
+        Row row = sheet1.createRow(rowId);
+        row.createCell(0, CellType.NUMERIC).setCellValue(summaryRevenue.getId());
+        row.createCell(1, CellType.NUMERIC).setCellValue(summaryRevenue.getAdmin().getId());
+        row.createCell(2, CellType.NUMERIC).setCellValue(String.valueOf(summaryRevenue.getTotalRevenue()));
+
+        Cell cell3 = row.createCell(3, CellType.STRING);
+        cell3.setCellStyle(cellStyle);
+        cell3.setCellValue(summaryRevenue.getCreatedAt());
+
+        rowId++;
+      }
+
+      wb.write(out);
+
+      String logMsg = "[GET] /api/v1/summary-revenue/download-excel - status " + HttpStatus.OK.value();
+      logger.info(logMsg);
+
+      return new ByteArrayInputStream(out.toByteArray());
+    } catch (IOError | IOException ioe) {
+      ioe.printStackTrace();
+      String logMsg = "[GET] /api/v1/admins/download-excel - status " + HttpStatus.INTERNAL_SERVER_ERROR.value();
+      logger.info(logMsg);
+      return null;
+    }
   }
 
   @Override

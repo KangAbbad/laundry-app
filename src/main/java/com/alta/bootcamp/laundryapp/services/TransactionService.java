@@ -262,6 +262,11 @@ public class TransactionService implements ITransactionService {
       headers.add("Notes");
       headers.add("Weight");
       headers.add("Total Price");
+      headers.add("Transaction Date");
+
+      CellStyle cellStyle = wb.createCellStyle();
+      CreationHelper createHelper = wb.getCreationHelper();
+      cellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd/mm/yyyy hh:mm:ss"));
 
       Row headerRow = sheet1.createRow(0);
 
@@ -278,6 +283,11 @@ public class TransactionService implements ITransactionService {
         row.createCell(2, CellType.STRING).setCellValue(transaction.getNotes());
         row.createCell(3, CellType.NUMERIC).setCellValue(transaction.getWeight());
         row.createCell(4, CellType.STRING).setCellValue(String.valueOf(transaction.getTotalPrice()));
+
+        Cell cell5 = row.createCell(5, CellType.STRING);
+        cell5.setCellStyle(cellStyle);
+        cell5.setCellValue(transaction.getCreatedAt());
+
         rowId++;
       }
 
