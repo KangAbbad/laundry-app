@@ -19,8 +19,6 @@ public class StompClient {
     // Listen to Localhost
     String URL = "ws://localhost:8080/chat";
 
-    // Listen to ngrok
-    // String URL = "ws://9899-140-213-162-102.ap.ngrok.io/chat";
     stompClient.connect(URL, stompListener);
 
     new Scanner(System.in).nextLine();

@@ -3,14 +3,12 @@ package com.alta.bootcamp.laundryapp.websocket.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 public class MessageDTO {
-  public enum MessageTypes {
-    JOIN, CHAT, LEAVE
-  }
-
-  private String sender;
-  private String content;
-  private MessageTypes type;
+  private Long adminId;
+  private BigDecimal totalRevenue;
+  private String notes;
 }

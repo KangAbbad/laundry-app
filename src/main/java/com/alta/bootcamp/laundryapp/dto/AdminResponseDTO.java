@@ -25,6 +25,7 @@ public class AdminResponseDTO implements Serializable {
   private String name;
   private String address;
 
+  @JsonIgnore
   private List<TransactionResponseDTO> transactions;
 
   @JsonIgnore

@@ -228,7 +228,6 @@ public class TransactionService implements ITransactionService {
 
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
-
     if (transaction.isPresent()) {
       transactionRepository.deleteById(id);
 
@@ -294,39 +293,6 @@ public class TransactionService implements ITransactionService {
       logger.info(logMsg);
       return null;
     }
-  }
-
-  @Override
-  @Transactional
-  public ResponseDTO<List<TodayRevenueDTO>> getTodayRevenue() {
-    List<Object[]> todayRevenues = transactionRepository.getTodayRevenue();
-
-    List<TodayRevenueDTO> todayRevenueToDto = new ArrayList<>();
-
-    todayRevenues.forEach(revenue -> {
-      BigInteger adminId = (BigInteger) Arrays.stream(revenue).toList().get(0);
-      BigDecimal todayRevenue = (BigDecimal) Arrays.stream(revenue).toList().get(1);
-
-      TodayRevenueDTO adminDailyRevenue = new TodayRevenueDTO();
-      adminDailyRevenue.setAdminId(adminId.longValue());
-      adminDailyRevenue.setTodayRevenue(todayRevenue);
-
-      todayRevenueToDto.add(adminDailyRevenue);
-    });
-
-//    List<TodayRevenueDTO> todayRevenuesToDto = todayRevenues.stream()
-//            .map(revenue -> modelMapper.map(revenue, TodayRevenueDTO.class))
-//            .collect(Collectors.toList());
-
-    ResponseDTO<List<TodayRevenueDTO>> response = new ResponseDTO<>();
-    response.setData(todayRevenueToDto);
-    response.setStatus(HttpStatus.OK.value());
-    response.setMessage("");
-
-    String logMsg = "[GET] /api/v1/transactions/today-revenue";
-    logger.info(logMsg);
-
-    return response;
   }
 
   private ResponseDTO<TransactionResponseDTO> convertTransactionEntityToDto(Transaction tempTransaction) {

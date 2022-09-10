@@ -1,6 +1,6 @@
 package com.alta.bootcamp.laundryapp.websocket.listener;
 
-import com.alta.bootcamp.laundryapp.dto.TodayRevenueDTO;
+import com.alta.bootcamp.laundryapp.websocket.dto.MessageDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 public class StompListener extends StompSessionHandlerAdapter {
   private final Logger logger = LoggerFactory.getLogger(StompListener.class);
@@ -28,14 +29,19 @@ public class StompListener extends StompSessionHandlerAdapter {
   }
 
   @Override
-  public Type getPayloadType(StompHeaders headers) { return TodayRevenueDTO.class; }
+  public Type getPayloadType(StompHeaders headers) { return MessageDTO.class; }
 
   @Override
   public void handleFrame(StompHeaders headers, Object payload) {
-    TodayRevenueDTO todayRevenue = (TodayRevenueDTO) payload;
+    MessageDTO todayRevenue = (MessageDTO) payload;
 
-    logger.info("===== Daily Revenue =====");
-    logger.info("Admin ID: " + todayRevenue.getAdminId());
-    logger.info("Total Revenue: " + todayRevenue.getTodayRevenue());
+    if (!Objects.equals(todayRevenue.getNotes(), "") || todayRevenue.getNotes() != null) {
+      logger.info("===== Daily Revenue =====");
+      logger.info("Notes: " + todayRevenue.getNotes());
+    } else {
+      logger.info("===== Daily Revenue =====");
+      logger.info("Admin ID: " + todayRevenue.getAdminId());
+      logger.info("Total Revenue: " + todayRevenue.getTotalRevenue());
+    }
   }
 }

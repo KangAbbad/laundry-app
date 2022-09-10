@@ -14,5 +14,4 @@ public interface ITransactionService {
   ResponseDTO<TransactionResponseDTO> updateTransactionStatus(Long id, TransactionStatusRequestDTO request);
   ResponseDTO<TransactionResponseDTO> deleteTransaction(Long id);
   ByteArrayInputStream downloadExcel();
-  ResponseDTO<List<TodayRevenueDTO>> getTodayRevenue();
 }

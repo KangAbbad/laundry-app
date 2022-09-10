@@ -44,6 +44,12 @@ public class SummaryRevenueController {
     return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
   }
 
+  @GetMapping("/today")
+  public ResponseEntity<ResponseDTO<List<TodayRevenueDTO>>> getTodayRevenue() {
+    ResponseDTO<List<TodayRevenueDTO>> response = summaryRevenueService.getTodayRevenue();
+    return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+  }
+
   @PutMapping("/{id}")
   public ResponseEntity<ResponseDTO<SummaryRevenueResponseDTO>> updateSummaryRevenue(@PathVariable("id") Long id, @RequestBody SummaryRevenueRequestDTO request) {
     ResponseDTO<SummaryRevenueResponseDTO> response = summaryRevenueService.updateSummaryRevenue(id, request);

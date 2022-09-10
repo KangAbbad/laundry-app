@@ -89,10 +89,4 @@ public class TransactionController {
 
 //    return new ResponseEntity<>(response, responseHeaders, HttpStatus.valueOf(response.getStatus()));
   }
-
-  @GetMapping("/today-revenue")
-  public ResponseEntity<ResponseDTO<List<TodayRevenueDTO>>> getTodayRevenue() {
-    ResponseDTO<List<TodayRevenueDTO>> response = transactionService.getTodayRevenue();
-    return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
-  }
 }

@@ -52,7 +52,7 @@ public class DeleteAdminTest {
 
     ResponseDTO<AdminResponseDTO> response = new ResponseDTO<>();
     response.setData(null);
-    response.setStatus(HttpStatus.NO_CONTENT.value());
+    response.setStatus(HttpStatus.OK.value());
     response.setMessage("Admin ID: " + requestParamId + " (" + admin.get().getUsername() + ") deleted successfully");
 
     assertThat(deletedAdmin).isEqualTo(response);

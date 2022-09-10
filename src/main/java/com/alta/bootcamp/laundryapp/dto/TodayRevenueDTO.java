@@ -13,6 +13,6 @@ import java.math.BigDecimal;
 public class TodayRevenueDTO {
   @JsonProperty("admin_id")
   private Long adminId;
-  @JsonProperty("today_revenue")
-  private BigDecimal todayRevenue;
+  @JsonProperty("total_revenue")
+  private BigDecimal totalRevenue;
 }

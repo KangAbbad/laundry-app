@@ -51,7 +51,7 @@ public class DeleteTransactionTest {
 
     ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
     response.setData(null);
-    response.setStatus(HttpStatus.NO_CONTENT.value());
+    response.setStatus(HttpStatus.OK.value());
     response.setMessage("Transaction ID: " + requestParamId + " deleted successfully");
 
     assertThat(deletedTransaction).isEqualTo(response);

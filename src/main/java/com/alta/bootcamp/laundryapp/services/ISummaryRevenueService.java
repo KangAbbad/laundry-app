@@ -11,4 +11,5 @@ public interface ISummaryRevenueService {
   ResponseDTO<SummaryRevenueResponseDTO> getSummaryRevenue(Long id);
   ResponseDTO<SummaryRevenueResponseDTO> updateSummaryRevenue(Long id, SummaryRevenueRequestDTO request);
   ResponseDTO<SummaryRevenueResponseDTO> deleteSummaryRevenue(Long id);
+  ResponseDTO<List<TodayRevenueDTO>> getTodayRevenue();
 }

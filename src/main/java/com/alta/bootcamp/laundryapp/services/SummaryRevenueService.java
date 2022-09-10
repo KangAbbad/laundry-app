@@ -19,6 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -82,7 +86,10 @@ public class SummaryRevenueService implements ISummaryRevenueService {
 
   @Override
   public ResponseDTO<SummaryRevenueResponseDTO> getSummaryRevenue(Long id) {
+    if (id == null) throw new ValidationErrorException("Summary Revenue ID cannot be empty");
+
     Optional<SummaryRevenue> summaryRevenue = summaryRevenueRepository.findById(id);
+
     if (summaryRevenue.isPresent()) {
       ResponseDTO<SummaryRevenueResponseDTO> response = new ResponseDTO<>();
       response.setData(convertToDto(summaryRevenue.get()));
@@ -98,6 +105,35 @@ public class SummaryRevenueService implements ISummaryRevenueService {
       logger.error(logMsg);
       throw new ResourceNotFoundException("Summary Revenue ID not found");
     }
+  }
+
+  @Override
+  @Transactional
+  public ResponseDTO<List<TodayRevenueDTO>> getTodayRevenue() {
+    List<Object[]> todayRevenues = summaryRevenueRepository.getTodayRevenue();
+
+    List<TodayRevenueDTO> todayRevenueToDto = new ArrayList<>();
+
+    todayRevenues.forEach(revenue -> {
+      BigInteger adminId = (BigInteger) Arrays.stream(revenue).toList().get(0);
+      BigDecimal todayRevenue = (BigDecimal) Arrays.stream(revenue).toList().get(1);
+
+      TodayRevenueDTO adminDailyRevenue = new TodayRevenueDTO();
+      adminDailyRevenue.setAdminId(adminId.longValue());
+      adminDailyRevenue.setTotalRevenue(todayRevenue);
+
+      todayRevenueToDto.add(adminDailyRevenue);
+    });
+
+    ResponseDTO<List<TodayRevenueDTO>> response = new ResponseDTO<>();
+    response.setData(todayRevenueToDto);
+    response.setStatus(HttpStatus.OK.value());
+    response.setMessage("");
+
+    String logMsg = "[GET] /api/v1/summary-revenue/today - status " + HttpStatus.OK.value();
+    logger.info(logMsg);
+
+    return response;
   }
 
   @Override
