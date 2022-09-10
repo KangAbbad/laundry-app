@@ -228,16 +228,16 @@ public class TransactionService implements ITransactionService {
 
     Optional<Transaction> transaction = transactionRepository.findById(id);
 
-    ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
 
     if (transaction.isPresent()) {
       transactionRepository.deleteById(id);
 
+      ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
       response.setData(null);
-      response.setStatus(HttpStatus.NO_CONTENT.value());
+      response.setStatus(HttpStatus.OK.value());
       response.setMessage("Transaction ID: " + id + " deleted successfully");
 
-      String logMsg = "[DELETE] /api/v1/transactions/" + "{" + id + "}" + " - Transaction ID not found";
+      String logMsg = "[DELETE] /api/v1/transactions/" + "{" + id + "}" + " - Transaction deleted successfully";
       logger.info(logMsg);
 
       return response;
@@ -338,7 +338,7 @@ public class TransactionService implements ITransactionService {
     response.setMessage("Transaction updated successfully");
 
     String logMsg = "[PUT] /api/v1/transactions/" + "{" + updatedTransaction.getId() + "}" + " - Transaction updated successfully";
-    logger.error(logMsg);
+    logger.info(logMsg);
 
     return response;
   }

@@ -1,6 +1,7 @@
 package com.alta.bootcamp.laundryapp.utils;
 
 import com.alta.bootcamp.laundryapp.dto.AdminRequestDTO;
+import com.alta.bootcamp.laundryapp.dto.SummaryRevenueRequestDTO;
 import com.alta.bootcamp.laundryapp.dto.TransactionRequestDTO;
 import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,20 @@ public class ValidationUtils {
 
     if (request.getStatus() == null) {
       throw new ValidationErrorException("Status cannot be empty");
+    }
+  }
+
+  public static void validateSummaryRevenueRequest(SummaryRevenueRequestDTO request) {
+    if (request == null) {
+      throw new ValidationErrorException("Body request cannot be empty");
+    }
+
+    if (request.getAdminId() == null) {
+      throw new ValidationErrorException("Admin ID cannot be empty");
+    }
+
+    if (request.getTotalRevenue() == null) {
+      throw new ValidationErrorException("Total Revenue cannot be empty");
     }
   }
 }

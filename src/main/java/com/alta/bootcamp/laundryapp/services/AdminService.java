@@ -212,6 +212,10 @@ public class AdminService implements IAdminService {
         tempAdmin.setAddress(request.getAddress());
       }
 
+      if (request.getPassword() != null) {
+        tempAdmin.setPassword(passwordEncoder.encode(request.getPassword()));
+      }
+
       Admin convertToEntity = modelMapper.map(tempAdmin, Admin.class);
       Admin updatedAdmin = adminRepository.save(convertToEntity);
 
@@ -243,7 +247,7 @@ public class AdminService implements IAdminService {
       adminRepository.deleteById(id);
 
       response.setData(null);
-      response.setStatus(HttpStatus.NO_CONTENT.value());
+      response.setStatus(HttpStatus.OK.value());
       response.setMessage("Admin ID: " + id + " (" + admin.get().getUsername() + ") deleted successfully");
 
       String logMsg = "[DELETE] /api/v1/admins/" + "{" + id + "}" + " - Admin ID: " + id + " (" + admin.get().getUsername() + ") deleted successfully";

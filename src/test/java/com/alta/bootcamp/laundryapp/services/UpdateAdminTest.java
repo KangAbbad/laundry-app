@@ -16,6 +16,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -31,6 +33,8 @@ public class UpdateAdminTest {
   AdminService serviceUnderTest = spy(new AdminService());
 
   ModelMapper modelMapper = spy(new ModelMapper());
+
+  PasswordEncoder passwordEncoder = spy(new BCryptPasswordEncoder());
 
   @BeforeEach
   void setup() {

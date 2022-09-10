@@ -63,7 +63,7 @@ public class TransactionController {
   @DeleteMapping("/{id}")
   public ResponseEntity<ResponseDTO<TransactionResponseDTO>> deleteTransaction(@PathVariable("id") Long id) {
     ResponseDTO<TransactionResponseDTO> response = transactionService.deleteTransaction(id);
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
   }
 
   @GetMapping("/download-excel")

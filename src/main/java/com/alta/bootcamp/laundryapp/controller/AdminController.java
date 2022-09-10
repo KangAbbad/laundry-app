@@ -51,7 +51,7 @@ public class AdminController {
   @DeleteMapping("/{id}")
   public ResponseEntity<ResponseDTO<AdminResponseDTO>> deleteAdmin(@PathVariable("id") Long id) {
     ResponseDTO<AdminResponseDTO> response = adminService.deleteAdmin(id);
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
   }
 
   @GetMapping("/download-excel")

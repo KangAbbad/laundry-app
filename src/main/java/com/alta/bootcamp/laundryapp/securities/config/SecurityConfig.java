@@ -80,6 +80,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .permitAll()
             .antMatchers("/api/v1/signup", "/api/v1/signin")
             .permitAll()
+            .antMatchers("/chat")
+            .permitAll()
             .anyRequest()
             .authenticated();
 
