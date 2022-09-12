@@ -10,6 +10,10 @@ Aplikasi backend sederhana untuk transaksi jasa laundry
 
 Link: [https://app.swaggerhub.com/apis-docs/KangAbbad/laundry-app/1.0.0](https://app.swaggerhub.com/apis-docs/KangAbbad/laundry-app/1.0.0)
 
+### Postman API Docs
+
+Link: [https://documenter.getpostman.com/view/3702153/VVBWUSLV](https://documenter.getpostman.com/view/3702153/VVBWUSLV)
+
 ### Google Slides
 
 Link: [https://docs.google.com/presentation/d/1b03NiBEOqI9CYMN8FSVcFwusBeqjomuK6s4Gj_atWBI/edit?usp=sharing](https://docs.google.com/presentation/d/1b03NiBEOqI9CYMN8FSVcFwusBeqjomuK6s4Gj_atWBI/edit?usp=sharing)

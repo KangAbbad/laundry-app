@@ -35,7 +35,7 @@ public class StompListener extends StompSessionHandlerAdapter {
   public void handleFrame(StompHeaders headers, Object payload) {
     MessageDTO todayRevenue = (MessageDTO) payload;
 
-    if (!Objects.equals(todayRevenue.getNotes(), "") || todayRevenue.getNotes() != null) {
+    if (!Objects.equals(todayRevenue.getNotes(), "")) {
       logger.info("===== Daily Revenue =====");
       logger.info("Notes: " + todayRevenue.getNotes());
     } else {
