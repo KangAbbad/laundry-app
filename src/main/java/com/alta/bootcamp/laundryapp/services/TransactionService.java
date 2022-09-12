@@ -21,14 +21,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOError;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -44,9 +41,6 @@ public class TransactionService implements ITransactionService {
 
   @Autowired
   AdminRepository adminRepository;
-
-  @Autowired
-  EntityManager entityManager;
 
   @SneakyThrows
   @Override

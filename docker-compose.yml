@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  db:
+  postgres:
     image: postgres:latest
     restart: always
     environment:
@@ -9,7 +9,16 @@ services:
     ports:
       - '5432:5432'
     volumes: 
-      - db:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
+
+  rabbit:
+    image: rabbitmq:3.10-management
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 volumes:
-  db:
+  postgres:
     driver: local

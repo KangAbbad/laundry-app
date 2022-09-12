@@ -1,6 +1,7 @@
 package com.alta.bootcamp.laundryapp.controller;
 
 import com.alta.bootcamp.laundryapp.dto.*;
+import com.alta.bootcamp.laundryapp.rabbit.services.IPublisherService;
 import com.alta.bootcamp.laundryapp.services.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -21,9 +22,24 @@ public class TransactionController {
   @Autowired
   ITransactionService transactionService;
 
+  @Autowired
+  IPublisherService publisherService;
+
   @PostMapping
   public ResponseEntity<ResponseDTO<TransactionResponseDTO>> createTransaction(@RequestBody TransactionRequestDTO request) {
     ResponseDTO<TransactionResponseDTO> response = transactionService.createTransaction(request);
+    return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
+  }
+
+  @PostMapping("/with-rabbit")
+  public ResponseEntity<ResponseDTO<TransactionResponseDTO>> createTransactionUsingRabbit(@RequestBody TransactionRequestDTO request) {
+    publisherService.sendUsingExchange(request);
+
+    ResponseDTO<TransactionResponseDTO> response = new ResponseDTO<>();
+    response.setData(null);
+    response.setMessage("[Rabbit] Transaction will be processed");
+    response.setStatus(HttpStatus.OK.value());
+
     return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
   }
 
