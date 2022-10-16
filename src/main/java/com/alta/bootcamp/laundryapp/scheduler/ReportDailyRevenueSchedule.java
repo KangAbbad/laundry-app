@@ -40,8 +40,8 @@ public class ReportDailyRevenueSchedule {
   private SimpMessageSendingOperations messagingTemplate;
 
   @Async
-  @Scheduled(cron = "*/3 * * * * *") // every 3 seconds - [DEVELOPMENT PURPOSE]
-  // @Scheduled(cron = "0 0 0 * * *") // every 12:00 AM
+  // @Scheduled(cron = "*/3 * * * * *") // every 3 seconds - [DEVELOPMENT PURPOSE]
+  @Scheduled(cron = "0 0 0 * * *") // every 12:00 AM
   public void scheduleGetTodayRevenue() {
     List<SummaryRevenue> todayRevenueList = new ArrayList<>();
 

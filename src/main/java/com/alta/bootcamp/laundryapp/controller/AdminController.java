@@ -10,10 +10,12 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/admins")
@@ -24,13 +26,20 @@ public class AdminController {
   @GetMapping
   public ResponseEntity<ResponseWithMetaDTO<List<AdminResponseDTO>>> getAllAdmins(
           @RequestParam(defaultValue = "1") int page,
-          @RequestParam(name = "per_page", defaultValue = "5") int perPage
+          @RequestParam(name = "per_page", defaultValue = "5") int perPage,
+          @RequestParam(defaultValue = "desc") String sort
   ) {
     Pageable pages;
+    Sort.Direction sortBy = Sort.Direction.DESC;
+
+    if (Objects.equals(sort, "asc")) {
+      sortBy = Sort.Direction.ASC;
+    }
+
     if (page < 1) {
-      pages = PageRequest.of(0, perPage);
+      pages = PageRequest.of(0, perPage, Sort.by(sortBy, "createdAt"));
     } else {
-      pages = PageRequest.of(page - 1, perPage);
+      pages = PageRequest.of(page - 1, perPage, Sort.by(sortBy, "createdAt"));
     }
     ResponseWithMetaDTO<List<AdminResponseDTO>> response = adminService.getAllAdmins(pages);
     return new ResponseEntity<>(response, HttpStatus.valueOf(response.getStatus()));
