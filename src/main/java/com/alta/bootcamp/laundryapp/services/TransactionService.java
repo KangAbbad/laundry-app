@@ -9,6 +9,7 @@ import com.alta.bootcamp.laundryapp.exceptions.ValidationErrorException;
 import com.alta.bootcamp.laundryapp.repositories.AdminRepository;
 import com.alta.bootcamp.laundryapp.repositories.TransactionRepository;
 import com.alta.bootcamp.laundryapp.utils.ValidationUtils;
+import com.alta.bootcamp.laundryapp.websocket.dto.MessageDTO;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -41,6 +43,9 @@ public class TransactionService implements ITransactionService {
 
   @Autowired
   AdminRepository adminRepository;
+
+  @Autowired
+  SimpMessageSendingOperations messagingTemplate;
 
   @SneakyThrows
   @Override
@@ -66,6 +71,13 @@ public class TransactionService implements ITransactionService {
       response.setData(convertToDto(createdTransaction));
       response.setStatus(HttpStatus.CREATED.value());
       response.setMessage("Transaction created successfully");
+
+      MessageDTO message = new MessageDTO();
+      message.setType("message");
+      message.setTitle("Admin ID: " + newTransaction.getAdmin().getId());
+      message.setDescription("[Transaction: " + newTransaction.getTotalPrice() + "]" + " - Transaction created successfully");
+
+      messagingTemplate.convertAndSend("/topic/messages", message);
 
       logger.info("[POST] /api/v1/transactions - Transaction created successfully");
 

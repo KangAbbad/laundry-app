@@ -50,9 +50,9 @@ public class ReportDailyRevenueSchedule {
     if (todayRevenue.getData().size() > 0) {
       for (TodayRevenueDTO revenue : todayRevenue.getData()) {
         MessageDTO message = new MessageDTO();
-        message.setAdminId(revenue.getAdminId());
-        message.setNotes("");
-        message.setTotalRevenue(revenue.getTotalRevenue());
+        message.setType("message");
+        message.setTitle("Admin ID: " + revenue.getAdminId());
+        message.setDescription("Total Revenue: " + revenue.getTotalRevenue());
 
         SummaryRevenue summaryRevenue = convertToEntity(revenue);
         todayRevenueList.add(summaryRevenue);
@@ -65,9 +65,9 @@ public class ReportDailyRevenueSchedule {
       summaryRevenueRepository.saveAll(todayRevenueList);
     } else {
       MessageDTO message = new MessageDTO();
-      message.setAdminId(null);
-      message.setNotes("There is no transaction today");
-      message.setTotalRevenue(BigDecimal.valueOf(0));
+      message.setType("message");
+      message.setTitle("Admin ID: Not Found");
+      message.setDescription("Total Revenue: 0");
 
       logger.warn("[SCHEDULE] There is no transaction today");
 

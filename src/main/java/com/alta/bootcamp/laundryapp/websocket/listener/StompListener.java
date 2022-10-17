@@ -9,7 +9,6 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
 import java.lang.reflect.Type;
-import java.util.Objects;
 
 public class StompListener extends StompSessionHandlerAdapter {
   private final Logger logger = LoggerFactory.getLogger(StompListener.class);
@@ -33,15 +32,11 @@ public class StompListener extends StompSessionHandlerAdapter {
 
   @Override
   public void handleFrame(StompHeaders headers, Object payload) {
-    MessageDTO todayRevenue = (MessageDTO) payload;
+    MessageDTO message = (MessageDTO) payload;
 
-    if (!Objects.equals(todayRevenue.getNotes(), "")) {
-      logger.info("===== Daily Revenue =====");
-      logger.info("Notes: " + todayRevenue.getNotes());
-    } else {
-      logger.info("===== Daily Revenue =====");
-      logger.info("Admin ID: " + todayRevenue.getAdminId());
-      logger.info("Total Revenue: " + todayRevenue.getTotalRevenue());
-    }
+    logger.info("===== Websocket Message =====");
+    logger.info("Type: " + message.getType());
+    logger.info("Title: " + message.getTitle());
+    logger.info("Description: " + message.getDescription());
   }
 }
